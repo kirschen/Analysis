@@ -57,7 +57,7 @@ parser.add_option('--logLevel',  choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO'
 
 
 # Logging
-import TopEFT.Tools.logger as logger
+import Analysis.Tools.logger as logger
 logger  = logger.get_logger(options.logLevel, logFile = None)
 
 # Arguments
