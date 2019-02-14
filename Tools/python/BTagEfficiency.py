@@ -14,9 +14,8 @@ ptBorders = [30, 50, 70, 100, 140, 200, 300, 600, 1000]
 ptBins    = [ [ptBorders[i], ptBorders[i+1]] for i in range(len(ptBorders)-1) ]
 ptBins   += [ [ptBorders[-1], -1] ]
 
-etaBins = [[0,0.8], [0.8,1.6], [ 1.6, 2.4]]
-#etaBins2016 = [[0,2.4]]
-#etaBins2017 = [[0,2.5]]
+etaBins2016 = [[0,2.4]]
+etaBins2017 = [[0,2.5]]
 
 def toFlavourKey(pdgId):
     if abs(pdgId)==5: return ROOT.BTagEntry.FLAV_B
@@ -25,11 +24,11 @@ def toFlavourKey(pdgId):
 
 
 #Method 1ab
-effFile2016DeepCSV = 'TTLep_pow_Moriond17_2j_2l.pkl' #TTLep_pow_2016_2j_2l_DeepB_eta.pkl'
+effFile2016DeepCSV = 'TTLep_pow_2016_2j_2l_DeepB_eta.pkl'
 effFile2017DeepCSV = 'TTLep_pow_2017_2j_2l_DeepB_eta.pkl'
 effFile2018DeepCSV = 'TTLep_pow_2018_2j_2l_DeepB_eta.pkl'
 
-effFile2016CSVv2   = 'TTLep_pow_Moriond17_2j_2l.pkl' #TTLep_pow_2016_2j_2l_CSVv2_eta.pkl'
+effFile2016CSVv2   = 'TTLep_pow_2016_2j_2l_CSVv2_eta.pkl'
 effFile2017CSVv2   = 'TTLep_pow_2017_2j_2l_CSVv2_eta.pkl'
 effFile2018CSVv2   = 'TTLep_pow_2018_2j_2l_CSVv2_eta.pkl'
 
@@ -103,7 +102,7 @@ class BTagEfficiency:
 
         # Input files
         if year == 2016:
-#            self.etaBins = etaBins2016
+            self.etaBins = etaBins2016
             if tagger == 'CSVv2':
                 self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2016CSVv2 ) )
                 self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile_FastSim ) )
@@ -114,7 +113,7 @@ class BTagEfficiency:
                 self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2016DeepCSV ) )
 
         if year == 2017:
-#            self.etaBins = etaBins2017
+            self.etaBins = etaBins2017
             if tagger == 'CSVv2':
                 self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2017CSVv2 ) )
                 self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile_FastSim ) )
@@ -125,7 +124,7 @@ class BTagEfficiency:
                 self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2017DeepCSV ) )
 
         if year == 2018:
-#            self.etaBins = etaBins2017
+            self.etaBins = etaBins2017
             if tagger == 'CSVv2':
                 self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2018CSVv2 ) )
                 self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile_FastSim ) )
@@ -168,7 +167,7 @@ class BTagEfficiency:
         for ptBin in ptBins:
             if pt>=ptBin[0] and (pt<ptBin[1] or ptBin[1]<0):
                 aeta=abs(eta)
-                for etaBin in etaBins:
+                for etaBin in self.etaBins:
                     if abs(aeta)>=etaBin[0] and abs(aeta)<etaBin[1]:
                         if abs(pdgId)==5:      return  self.mcEff[tuple(ptBin)][tuple(etaBin)]["b"]
                         elif abs(pdgId)==4:    return  self.mcEff[tuple(ptBin)][tuple(etaBin)]["c"]

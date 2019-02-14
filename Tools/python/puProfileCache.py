@@ -81,8 +81,8 @@ class puProfile:
 if __name__ == "__main__":
 
     # Get all NanoAOD tuples for caching
-    from Samples.nanoAOD.Fall17            import *
-    from Analysis.Tools.user             import results_directory, plot_directory, cache_directory
+    from Samples.nanoAOD.Fall17_private_legacy_v1 import *
+    from Analysis.Tools.user                      import plot_directory, cache_directory
     
     if args.overwrite: os.remove( cache_directory + "/puProfiles/puProfiles_v2.sql" )
     for sample in allSamples:

@@ -1,7 +1,6 @@
-from Analysis.Tools.objectSelection import isGoodParticle
-from Analysis.Tools.observables     import deltaR
+from Analysis.Tools.helpers         import deltaR
 
-def isIsolatedPhoton( g, genparts, coneSize=0.2, ptCut=5, excludedPdgIds=[] ):
+def isIsolatedPhoton( g, genparts, coneSize=0.2, ptCut=5, excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] ):
     for other in genparts:
         if other['pdgId']              == 22:       continue   # Avoid photon or generator copies of it
         if other['pdgId'] in excludedPdgIds:        continue   # Avoid particles you don't want to consider (e.g. neutrinos)
