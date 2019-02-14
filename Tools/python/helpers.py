@@ -403,7 +403,7 @@ def m3( jets ):
     for j3_comb in itertools.combinations(vecs, 3):
         vecSum = sum( [v[1] for v in j3_comb], ROOT.TLorentzVector())
         if vecSum.Pt()>maxSumPt:
-        maxSumPt = vecSum.Pt()
+            maxSumPt = vecSum.Pt()
             m3 = vecSum.M()
             i1, i2, i3 =  [v[0] for v in j3_comb]
     return m3, i1, i2, i3
