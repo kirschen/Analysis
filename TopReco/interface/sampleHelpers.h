@@ -6,12 +6,6 @@
 
 #include <TString.h>
 
-
-
-
-
-
-
 /// Namespace to treat different analysis eras as enum types
 namespace Era{
     
@@ -27,11 +21,6 @@ namespace Era{
     /// Return energy for given era in TeV
     double energyInTev(const Era era);
 }
-
-
-
-
-
 
 
 /// Namespace to define enums needed for jet pileup ID
@@ -53,13 +42,6 @@ namespace JetPileupId{
     /// Cut value for corresponding working point, to be used with >= operator
     int cutValue(const WorkingPoint& wp);
 }
-
-
-
-
-
-
-
 
 /// Namespace to define enums needed for b-tag related stuff
 /// Also needed for b-tag scale factors, since ROOT dictionary does not want definitions done in ZTopUtils/

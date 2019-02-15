@@ -90,12 +90,13 @@ void KinematicReconstruction::angle_rot(const double& alpha, const double& e, co
 
 
 
-KinematicReconstruction::KinematicReconstruction(const std::string directory, const Era::Era era, const int minNumberOfBtags, const bool preferBtags, const bool massLoop):
+KinematicReconstruction::KinematicReconstruction(const std::string directory, const Era::Era era, const int minNumberOfBtags, const bool preferBtags, const bool massLoop, const float btag_wp):
 directory_(directory),
 era_(era),
 minNumberOfBtags_(minNumberOfBtags),
 preferBtags_(preferBtags),
 massLoop_(massLoop),
+btag_wp_(btag_wp),
 nSol_(0),
 h_wmass_(0),
 h_jetAngleRes_(0),
@@ -267,11 +268,11 @@ std::vector<KinematicReconstructionSolution> KinematicReconstruction::solutionsP
 }
 
 
-
 void KinematicReconstruction::kinReco(const LV& leptonMinus, const LV& leptonPlus, const VLV* jets, const std::vector<double>* btags, const LV* met)
 {
     
     sols_.clear();
+    foundSolution = false;
 
     //jets selection
     std::vector<int> b1_id;
@@ -388,16 +389,14 @@ bool KinematicReconstruction::solutionSmearing(KinematicReconstruction_MeanSol& 
 void KinematicReconstruction::inputNoJetMerging(std::vector<int>& b1_id, std::vector<int>& b2_id, std::vector<int>& nb_tag,
                                                 const std::vector<double>& btags)const
 {
-    //FIXME:Warning , hardcoded value of b-tag working point. 
-    constexpr double btag_wp = 0.244;
     
     for(int i = 0; i < (int)btags.size(); ++i){
         for(int j = 0; j < (int)btags.size(); ++j){
             double wi = btags.at(i);
             double wj = btags.at(j);
-            if(i==j || (wi<btag_wp && wj<btag_wp)) continue;
+            if(i==j || (wi<btag_wp_ && wj<btag_wp_)) continue;
 
-            if(wi>btag_wp && wj>btag_wp) nb_tag.push_back(2);
+            if(wi>btag_wp_ && wj>btag_wp_) nb_tag.push_back(2);
             else nb_tag.push_back(1);
 
             b1_id.push_back(i);
@@ -414,12 +413,13 @@ void KinematicReconstruction::setSolutions()
     
     if(nSol_ > 0){
         std::nth_element(begin(sols_), begin(sols_), end(sols_),
-                         [](const Struct_KinematicReconstruction& a, const Struct_KinematicReconstruction& b){
+                         [](const KinematicSolution& a, const KinematicSolution& b){
                              return  b.ntags < a.ntags || (b.ntags == a.ntags && b.weight < a.weight);
                          });
         
         sol_ = sols_[0];
     }
+    foundSolution = true;
 }
 
 
@@ -431,14 +431,14 @@ int KinematicReconstruction::getNSol()const
 
 
 
-Struct_KinematicReconstruction KinematicReconstruction::getSol()const
+KinematicSolution KinematicReconstruction::getSol()const
 {
     return sol_;
 }
 
 
 
-std::vector< Struct_KinematicReconstruction > KinematicReconstruction::getSols() const
+std::vector< KinematicSolution > KinematicReconstruction::getSols() const
 {
     return sols_;
 }
@@ -493,10 +493,8 @@ void KinematicReconstruction::loadData()
 
 void KinematicReconstruction::kinRecoMassLoop(const LV& leptonMinus, const LV& leptonPlus, const VLV* jets, const std::vector<double>* btags, const LV* met)
 {
-    //FIXME:Warning , hardcoded value of b-tag working point. 
-    constexpr double btag_wp = 0.244;
 
-    std::vector<Struct_KinematicReconstruction> vect_sol;
+    std::vector<KinematicSolution> vect_sol;
 
 
     const TLorentzVector leptonPlus_tlv = common::LVtoTLV(leptonPlus);
@@ -518,10 +516,10 @@ void KinematicReconstruction::kinRecoMassLoop(const LV& leptonMinus, const LV& l
             double wi = btags->at(i);
             double wj = btags->at(j);
 //             if(i==j || (wi<btag_wp && wj<btag_wp) || (wi<0 || wj<0))continue;
-            if(i==j || (wi<btag_wp && wj<btag_wp))continue;
+            if(i==j || (wi<btag_wp_ && wj<btag_wp_))continue;
             btag_ww.push_back(wi + wj);
 
-            if(wi>btag_wp && wj>btag_wp){nb_tag.push_back(2); }
+            if(wi>btag_wp_ && wj>btag_wp_){nb_tag.push_back(2); }
             else{nb_tag.push_back(1); }
 
             b1_id.push_back(i);
@@ -611,7 +609,7 @@ void KinematicReconstruction::kinRecoMassLoop(const LV& leptonMinus, const LV& l
 
     if(nSol_>0){
         std::nth_element(begin(vect_sol), begin(vect_sol), end(vect_sol),
-                         [](const Struct_KinematicReconstruction& a, const Struct_KinematicReconstruction& b){
+                         [](const KinematicSolution& a, const KinematicSolution& b){
                              return  b.ntags < a.ntags || (b.ntags == a.ntags && b.weight < a.weight);
                          });
 

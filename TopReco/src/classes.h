@@ -2,6 +2,7 @@
 #define classes_lorentz_for_top_h
 
 #include "Analysis/TopReco/interface/classesFwd.h"
+#include "Analysis/TopReco/interface/sampleHelpers.h"
 #include "Analysis/TopReco/interface/KinematicReconstruction.h"
 
 #include <Math/LorentzVector.h>

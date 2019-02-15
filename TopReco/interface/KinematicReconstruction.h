@@ -17,10 +17,7 @@ class KinematicReconstructionSolutions;
 class KinematicReconstruction_MeanSol;
 
 
-
-
-
-struct Struct_KinematicReconstruction{
+struct KinematicSolution{
     TLorentzVector lp, lm;
     TLorentzVector jetB, jetBbar;
     size_t jetB_index, jetBbar_index;
@@ -35,18 +32,15 @@ struct Struct_KinematicReconstruction{
 };
 
 
-
-
-
 class KinematicReconstruction{
     
 public:
-    KinematicReconstruction(const std::string directory, const Era::Era era, const int minNumberOfBtags, const bool preferBtags, const bool massLoop =false);
+    KinematicReconstruction(const std::string directory, const Era::Era era, const int minNumberOfBtags, const bool preferBtags, const bool massLoop = false, const float btag_wp = 0.244 );
     ~KinematicReconstruction(){}
-    
+
     int getNSol()const;
-    Struct_KinematicReconstruction getSol()const;
-    std::vector<Struct_KinematicReconstruction> getSols()const;
+    KinematicSolution getSol()const;
+    std::vector<KinematicSolution> getSols()const;
 
     std::string directory_;
     
@@ -60,6 +54,8 @@ public:
                                                const VLV& allLeptons,
                                                const VLV& allJets, const std::vector<double>& btags,
                                                const LV& met)const;
+
+    bool foundSolution = false;
     
     
 private:
@@ -86,7 +82,8 @@ private:
     
     /// Whether to run mass loop for top mass, instead of smearings according to uncertainties
     const bool massLoop_;
-    
+   
+    const float btag_wp_; 
     
     
     // FIXME: temporary helper variables for cleanup
@@ -108,8 +105,8 @@ private:
     TRandom3* r3_;
     
     int nSol_;
-    Struct_KinematicReconstruction sol_;
-    std::vector<Struct_KinematicReconstruction> sols_;
+    KinematicSolution sol_;
+    std::vector<KinematicSolution> sols_;
     
     // W mass
     TH1* h_wmass_;
