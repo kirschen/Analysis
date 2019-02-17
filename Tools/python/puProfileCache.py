@@ -36,7 +36,7 @@ else:
 
 class puProfile:
 
-    def __init__( self, source_sample, cacheDir="/afs/hephy.at/data/llechner01/Analysis/cache/puProfiles/" ):
+    def __init__( self, source_sample, cacheDir="/afs/hephy.at/data/llechner01/TTGammaEFT/cache/puProfiles/" ):
 
         if not os.path.isdir( cacheDir ): os.makedirs( cacheDir )
 
