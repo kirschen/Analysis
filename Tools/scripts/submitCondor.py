@@ -99,7 +99,7 @@ if __name__ == '__main__':
             os.makedirs(options.output)
 
         # general condor commands
-	rundir = cwd.strip(cmssw)
+        rundir = cwd.strip(cmssw)
         condorCommands  = []
         condorCommands += ["universe              = vanilla"]
         condorCommands += ["executable            = %s"%options.execFile]
