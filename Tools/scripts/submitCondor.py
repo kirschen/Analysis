@@ -30,10 +30,13 @@ parser = OptionParser()
 parser.add_option("--output",   dest="output",   default="/afs/hephy.at/work/%s/%s/condor_output/"%(user_initial, user), help="path for batch output ")
 parser.add_option("--execFile", dest="execFile", default="submit_to_lxplus.sh",            help="queue name for condor jobs")
 parser.add_option("--queue",    dest="queue",    default="nextweek", choices=queueChoices, help="queue name for condor jobs")
+parser.add_option('--dpm',      dest="dpm",      default=False,      action='store_true',  help="Use dpm?")
 parser.add_option('--dryrun',   dest="dryrun",                       action='store_true',  help='Run only on a small subset of the data?', )
 parser.add_option('--logLevel', dest="logLevel",                     choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], default='INFO', help="Log level for logging" )
 
 (options,args) = parser.parse_args()
+
+options.output = os.path.join( options.output, submit_time )
 
 # Hephy Token
 prepareTokens()
@@ -61,6 +64,23 @@ if __name__ == '__main__':
     if not len(args) == 1:
         raise Exception("Only one argument accepted! Instead this was given: %s"%args)
 
+    # If X509_USER_PROXY is set, use existing proxy.
+    if options.dpm:
+        if hostname.startswith("lxplus"):
+            from Analysis.Tools.user import cern_proxy_certificate
+            proxy_location = cern_proxy_certificate
+        else:
+            proxy_location = None
+
+        from RootTools.core.helpers import renew_proxy
+        proxy = renew_proxy( proxy_location )
+
+#        logger.info( "Using proxy certificate %s", proxy )
+        os.system("export X509_USER_PROXY=%s"%proxy)
+        useProxy = True
+    else:
+        useProxy = False
+
     # load file with commands
     if os.path.isfile(args[0]):
         commands = []
@@ -76,7 +96,7 @@ if __name__ == '__main__':
 
         # create logfile output dir
         if not os.path.isdir(options.output):
-            os.mkdir(options.output)
+            os.makedirs(options.output)
 
         # general condor commands
 	rundir = cwd.strip(cmssw)
@@ -87,14 +107,15 @@ if __name__ == '__main__':
         for i, command in enumerate(commands):
  
             # condor commands for each job
-            filename = submit_time + "_" + command.replace(".py","").replace("  ","_").replace(" ","_").replace("--","")
-            condorCommands += ["output                = %s"%os.path.join(options.output, filename+".output")]
-            condorCommands += ["log                   = %s"%os.path.join(options.output, filename+".log")]
+            filename = command.replace(".py","").replace("  ","_").replace(" ","_").replace("--","")
+            condorCommands += ["output                = %s"%os.path.join(options.output, filename+".out")]
             condorCommands += ["error                 = %s"%os.path.join(options.output, filename+".err")]
+            condorCommands += ["log                   = %s"%os.path.join(options.output, filename+".log")]
             condorCommands += ["arguments             = %s %s"%(rundir, command) ]
             condorCommands += ['+JobFlavour           = "%s"'%options.queue]
-            condorCommands += ["x509userproxy         = $ENV(X509_USER_PROXY)"]
-            condorCommands += ["use_x509userproxy     = true"]
+            if useProxy:
+                condorCommands += ["x509userproxy         = $ENV(X509_USER_PROXY)"]
+                condorCommands += ["use_x509userproxy     = true"]
             condorCommands += ["queue 1"]
 
 # write a submit script
