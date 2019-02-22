@@ -36,11 +36,6 @@ parser.add_option('--logLevel', dest="logLevel",                     choices=['C
 
 (options,args) = parser.parse_args()
 
-options.output = os.path.join( options.output, submit_time )
-
-# Hephy Token
-prepareTokens()
-
 def getCommands( line ):
     commands = []
     split = None
@@ -60,6 +55,11 @@ def getCommands( line ):
 
 
 if __name__ == '__main__':
+
+    options.output = os.path.join( options.output, submit_time )
+
+    # Hephy Token
+    prepareTokens()
 
     if not len(args) == 1:
         raise Exception("Only one argument accepted! Instead this was given: %s"%args)
