@@ -17,7 +17,8 @@ def getParentIds( g, genParticles ):
 
   if g['genPartIdxMother'] > 0:
     try:
-        mother1  = genParticles[ g['genPartIdxMother'] ]
+        # This is safer than "genParticles[ g['genPartIdxMother'] ]", as the genParticles list can be sorted first, however it requires to add "index" in the dict before sorting
+        mother1  = [ genParticle["index"] == g['genPartIdxMother'] for genParticle in genParticles ][0]
         parents += [ mother1['pdgId'] ] + getParentIds( mother1, genParticles )
     except:
         # when no 'status' selection is made for g, this can run in a kind of endless-loop, then python throws an Exception
