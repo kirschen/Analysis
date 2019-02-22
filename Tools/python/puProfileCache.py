@@ -10,6 +10,7 @@ from RootTools.core.standard import *
 
 # Analysis
 from Analysis.Tools.ResultsDB import ResultsDB
+from Analysis.Tools.user      import cache_directory
 
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
 
@@ -36,7 +37,7 @@ else:
 
 class puProfile:
 
-    def __init__( self, source_sample, cacheDir="/afs/hephy.at/data/llechner01/TTGammaEFT/cache/puProfiles/" ):
+    def __init__( self, source_sample, cacheDir=os.path.join(cache_directory,"puProfiles") ):
 
         if not os.path.isdir( cacheDir ): os.makedirs( cacheDir )
 
@@ -82,7 +83,7 @@ if __name__ == "__main__":
 
     # Get all NanoAOD tuples for caching
     from Samples.nanoAOD.Fall17_private_legacy_v1 import *
-    from Analysis.Tools.user                      import plot_directory, cache_directory
+    from Analysis.Tools.user                      import plot_directory
     
     if args.overwrite: os.remove( cache_directory + "/puProfiles/puProfiles_v2.sql" )
     for sample in allSamples:
