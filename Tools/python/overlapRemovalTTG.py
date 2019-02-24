@@ -15,7 +15,7 @@ def isIsolatedPhoton( g, genparts, coneSize=0.2, ptCut=5, excludedPdgIds=[ 12, -
 def getParentIds( g, genParticles ):
   parents = []
 
-  if g['genPartIdxMother'] > 0:
+  if g['genPartIdxMother'] >= 0:
     try:
         # This is safer than "genParticles[ g['genPartIdxMother'] ]", as the genParticles list can be sorted first, however it requires to add "index" in the dict before sorting
         mother1  = [ genParticle for genParticle in genParticles if genParticle["index"] == g['genPartIdxMother'] ][0]
