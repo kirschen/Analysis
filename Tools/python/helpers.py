@@ -1,6 +1,7 @@
 ''' Helper functions for Analysis
 '''
 #Standard imports
+import os, sys, uuid
 import ROOT
 import itertools
 from math                             import pi, sqrt, cosh
@@ -407,3 +408,36 @@ def m3( jets ):
             m3 = vecSum.M()
             i1, i2, i3 =  [v[0] for v in j3_comb]
     return m3, i1, i2, i3
+
+
+def mapRootFile( rootFile ):
+    """ uses TFile.Map() function to check entries
+    """
+    tchain = ROOT.TChain( "Events" )
+    tchain.Add( rootFile )
+    tchain.GetFile().Map()
+
+def checkOutput( tmpFile ):
+    """ checks the output of deepCheckRootFile fuction for errors of TFile.Map()
+    """
+    if not os.path.exists( tmpFile ):
+        return False
+
+    with open( tmpFile, "r" ) as f:
+        output = f.readlines()
+    return not any( [ "G A P" in line for line in output ] )
+
+def deepCheckRootFile( rootFile ):
+    """ some root files are corrupt but can be opened and have all branches
+        the error appears when checking every event after some time as a "basket" error
+        this can be checked using TFile.Map()
+        however python does not catch the error, thus the workaround
+    """
+    tmpFile = str(uuid.uuid4()) + ".deepcheck"
+    cmd = os.system( "mapRootFile.py %s > %s"%(rootFile,tmpFile) )
+    if cmd != 0:
+        return False
+    out = checkOutput( tmpFile )
+    os.remove( tmpFile )
+    return out
+

@@ -27,7 +27,7 @@ queueChoices = [ "espresso", "microcentury", "longlunch", "workday", "tomorrow",
 from optparse import OptionParser
 
 parser = OptionParser()
-parser.add_option("--output",   dest="output",   default="/afs/hephy.at/work/%s/%s/condor_output/"%(user_initial, user), help="path for batch output ")
+parser.add_option("--output",   dest="output",   default="/afs/cern.ch/work/%s/%s/condor_output/"%(user_initial, user), help="path for batch output ")
 parser.add_option("--execFile", dest="execFile", default="submit_to_lxplus.sh",            help="queue name for condor jobs")
 parser.add_option("--queue",    dest="queue",    default="nextweek", choices=queueChoices, help="queue name for condor jobs")
 parser.add_option('--dpm',      dest="dpm",      default=False,      action='store_true',  help="Use dpm?")
@@ -75,7 +75,7 @@ if __name__ == '__main__':
         from RootTools.core.helpers import renew_proxy
         proxy = renew_proxy( proxy_location )
 
-#        logger.info( "Using proxy certificate %s", proxy )
+        logger.info( "Using proxy certificate %s", proxy )
         os.system("export X509_USER_PROXY=%s"%proxy)
         useProxy = True
     else:

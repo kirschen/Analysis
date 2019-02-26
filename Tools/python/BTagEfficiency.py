@@ -16,6 +16,7 @@ ptBins   += [ [ptBorders[-1], -1] ]
 
 etaBins2016 = [[0,2.4]]
 etaBins2017 = [[0,2.5]]
+etaBins2018 = [[0,2.5]]
 
 def toFlavourKey(pdgId):
     if abs(pdgId)==5: return ROOT.BTagEntry.FLAV_B
@@ -35,13 +36,16 @@ effFile2018CSVv2   = 'TTLep_pow_2018_2j_2l_CSVv2_eta.pkl'
 # Not working with FastSim for now
 sfFile_FastSim     = 'fastsim_csvv2_ttbar_26_1_2017.csv'
 
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation2016Legacy
 sfFile2016DeepCSV  = 'b2016_DeepCSV_Moriond17_B_H.csv'
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation94X
 sfFile2017DeepCSV  = 'b2017_DeepCSV_94XSF_V3_B_F.csv'
-sfFile2018DeepCSV  = 'b2017_DeepCSV_94XSF_V3_B_F.csv'
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation102X
+sfFile2018DeepCSV  = 'b2018_DeepCSV_102XSF_V1.csv'
 
 sfFile2016CSVv2    = 'b2016_CSVv2_Moriond17_B_H.csv'
 sfFile2017CSVv2    = 'b2017_CSVv2_94XSF_V2_B_F.csv'
-sfFile2018CSVv2    = 'b2017_CSVv2_94XSF_V2_B_F.csv'
+sfFile2018CSVv2    = 'b2017_CSVv2_94XSF_V2_B_F.csv' #still 2017
 
 class BTagEfficiency:
 
@@ -124,7 +128,7 @@ class BTagEfficiency:
                 self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2017DeepCSV ) )
 
         if year == 2018:
-            self.etaBins = etaBins2017
+            self.etaBins = etaBins2018
             if tagger == 'CSVv2':
                 self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2018CSVv2 ) )
                 self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile_FastSim ) )
@@ -256,6 +260,7 @@ class btagEfficiency_1d:
 
 
 if __name__ == "__main__":
+    print "2016"
     BTagEff = BTagEfficiency( year=2016,tagger="DeepCSV" )
     print BTagEff.getSF(5, 100, 1.5)[0]
     print BTagEff.getSF(5, 100, -1.5)[0]
@@ -267,6 +272,7 @@ if __name__ == "__main__":
     print BTagEff.getSF(5, 400, -2)[0]
     del BTagEff
 
+    print "2017"
     BTagEff = BTagEfficiency( year=2017,tagger="DeepCSV" )
     print BTagEff.getSF(5, 100, 1.5)[0]
     print BTagEff.getSF(5, 100, -1.5)[0]
@@ -278,6 +284,7 @@ if __name__ == "__main__":
     print BTagEff.getSF(5, 400, -2)[0]
     del BTagEff
 
+    print "2018"
     BTagEff = BTagEfficiency( year=2018,tagger="DeepCSV" )
     print BTagEff.getSF(5, 100, 1.5)[0]
     print BTagEff.getSF(5, 100, -1.5)[0]
