@@ -37,11 +37,11 @@ effFile2018CSVv2   = 'TTLep_pow_2018_2j_2l_CSVv2_eta.pkl'
 sfFile_FastSim     = 'fastsim_csvv2_ttbar_26_1_2017.csv'
 
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation2016Legacy
-sfFile2016DeepCSV  = 'b2016_DeepCSV_Moriond17_B_H.csv'
+sfFile2016DeepCSV  = 'b2016_DeepCSV_2016LegacySF_V1.csv' #Moriond2019
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation94X
 sfFile2017DeepCSV  = 'b2017_DeepCSV_94XSF_V3_B_F.csv'
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation102X
-sfFile2018DeepCSV  = 'b2018_DeepCSV_102XSF_V1.csv'
+sfFile2018DeepCSV  = 'b2018_DeepCSV_102XSF_V1.csv' #Moriond2019
 
 sfFile2016CSVv2    = 'b2016_CSVv2_Moriond17_B_H.csv'
 sfFile2017CSVv2    = 'b2017_CSVv2_94XSF_V2_B_F.csv'
