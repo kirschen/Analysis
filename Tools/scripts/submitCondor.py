@@ -23,16 +23,21 @@ if not hostname.startswith("lxplus"):
     raise Exception( "Running submitCondor.py outside of lxplus is not supported yet!" )
 
 queueChoices = [ "espresso", "microcentury", "longlunch", "workday", "tomorrow", "testmatch", "nextweek" ]
+logChoices   = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
 # Parser
 from optparse import OptionParser
 
 parser = OptionParser()
-parser.add_option("--output",   dest="output",   default="/afs/cern.ch/work/%s/%s/condor_output/"%(user_initial, user), help="path for batch output ")
-parser.add_option("--execFile", dest="execFile", default="submit_to_lxplus.sh",            help="queue name for condor jobs")
-parser.add_option("--queue",    dest="queue",    default="nextweek", choices=queueChoices, help="queue name for condor jobs")
-parser.add_option('--dpm',      dest="dpm",      default=False,      action='store_true',  help="Use dpm?")
-parser.add_option('--dryrun',   dest="dryrun",                       action='store_true',  help='Run only on a small subset of the data?', )
-parser.add_option('--logLevel', dest="logLevel",                     choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], default='INFO', help="Log level for logging" )
+parser.add_option("--output",             dest="output",             default="/afs/cern.ch/work/%s/%s/condor_output/"%(user_initial, user), help="path for batch output ")
+parser.add_option("--execFile",           dest="execFile",           default="submit_to_lxplus.sh",            help="queue name for condor jobs")
+parser.add_option("--queue",              dest="queue",              default="nextweek", choices=queueChoices, help="queue name for condor jobs")
+parser.add_option("--discSpace",          dest="discSpace",          default=None,       type=int,             help="Request disc space in MB")
+parser.add_option("--memory",             dest="memory",             default=None,       type=int,             help="Request memory in MB")
+parser.add_option('--dpm',                dest="dpm",                                    action='store_true',  help="Use dpm?")
+parser.add_option('--resubmitFailedJobs', dest="resubmitFailedJobs",                     action='store_true',  help="Resubmit Job when exitcode != 0" )
+parser.add_option('--maxRetries',         dest="maxRetries",         default=10,         type=int,             help="Resubmit Job x times. Default is 10" )
+parser.add_option('--dryrun',             dest="dryrun",                                 action='store_true',  help='Run only on a small subset of the data?', )
+parser.add_option('--logLevel',           dest="logLevel",           default="INFO",     choices=logChoices,   help="Log level for logging" )
 
 (options,args) = parser.parse_args()
 
@@ -75,11 +80,8 @@ if __name__ == '__main__':
         from RootTools.core.helpers import renew_proxy
         proxy = renew_proxy( proxy_location )
 
-        logger.info( "Using proxy certificate %s", proxy )
+#        logger.info( "Using proxy certificate %s", proxy )
         os.system("export X509_USER_PROXY=%s"%proxy)
-        useProxy = True
-    else:
-        useProxy = False
 
     # load file with commands
     if os.path.isfile(args[0]):
@@ -113,7 +115,16 @@ if __name__ == '__main__':
             condorCommands += ["log                   = %s"%os.path.join(options.output, filename+".log")]
             condorCommands += ["arguments             = %s %s"%(rundir, command) ]
             condorCommands += ['+JobFlavour           = "%s"'%options.queue]
-            if useProxy:
+            if options.discSpace:
+                condorCommands += ["request_disk          = %i"%(options.discSpace*1000)] # disc space in kB (MB*1000)
+            if options.memory:
+                condorCommands += ["request_memory        = %i"%(options.memory)] # memory in MB
+            if options.resubmitFailedJobs:
+                # Make sure your .sh file ends with the failing job!
+                # If e.g. there is an "echo ..." after the failing job, the .sh file returns an error code 0, as "echo" was successful
+                condorCommands += ["on_exit_remove        = ExitCode =?= 0"]
+                condorCommands += ["max_retries           = %i" %options.maxRetries]            
+            if options.dpm:
                 condorCommands += ["x509userproxy         = $ENV(X509_USER_PROXY)"]
                 condorCommands += ["use_x509userproxy     = true"]
             condorCommands += ["queue 1"]
