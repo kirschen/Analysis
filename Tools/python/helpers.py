@@ -416,6 +416,7 @@ def mapRootFile( rootFile ):
     tchain = ROOT.TChain( "Events" )
     tchain.Add( rootFile )
     tchain.GetFile().Map()
+    del tchain
 
 def checkOutput( tmpFile ):
     """ checks the output of deepCheckRootFile fuction for errors of TFile.Map()
@@ -433,7 +434,7 @@ def deepCheckRootFile( rootFile ):
         this can be checked using TFile.Map()
         however python does not catch the error, thus the workaround
     """
-    tmpFile = str(uuid.uuid4()) + ".deepcheck"
+    tmpFile = "/tmp/%s.deepcheck"%str(uuid.uuid4())
     cmd = os.system( "mapRootFile.py %s > %s"%(rootFile,tmpFile) )
     if cmd != 0:
         return False
