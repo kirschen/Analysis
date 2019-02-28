@@ -1,7 +1,7 @@
 ''' Helper functions for Analysis
 '''
 #Standard imports
-import os, sys, uuid
+import os, sys, uuid, subprocess
 import ROOT
 import itertools
 from math                             import pi, sqrt, cosh
@@ -409,24 +409,12 @@ def m3( jets ):
             i1, i2, i3 =  [v[0] for v in j3_comb]
     return m3, i1, i2, i3
 
-
 def mapRootFile( rootFile ):
-    """ uses TFile.Map() function to check entries
+    """ uses TFile.Map() function to check entries for GAP in basket
     """
-    tchain = ROOT.TChain( "Events" )
-    tchain.Add( rootFile )
-    tchain.GetFile().Map()
-    del tchain
-
-def checkOutput( tmpFile ):
-    """ checks the output of deepCheckRootFile fuction for errors of TFile.Map()
-    """
-    if not os.path.exists( tmpFile ):
-        return False
-
-    with open( tmpFile, "r" ) as f:
-        output = f.readlines()
-    return not any( [ "G A P" in line for line in output ] )
+    rf = ROOT.TFile.Open( rootFile )
+    rf.Map()
+    rf.Close()
 
 def deepCheckRootFile( rootFile ):
     """ some root files are corrupt but can be opened and have all branches
@@ -434,11 +422,11 @@ def deepCheckRootFile( rootFile ):
         this can be checked using TFile.Map()
         however python does not catch the error, thus the workaround
     """
-    tmpFile = "/tmp/%s.deepcheck"%str(uuid.uuid4())
-    cmd = os.system( "mapRootFile.py %s > %s"%(rootFile,tmpFile) )
-    if cmd != 0:
-        return False
-    out = checkOutput( tmpFile )
-    os.remove( tmpFile )
-    return out
+    import shlex
+    from subprocess import Popen, PIPE
+
+    cmd      = "python -c 'from Analysis.Tools.helpers import mapRootFile; mapRootFile(\"%s\")'"%rootFile
+    proc     = Popen( shlex.split(cmd), stdout=PIPE, stderr=PIPE)
+    out, err = proc.communicate()
+    return not "G A P" in out
 
