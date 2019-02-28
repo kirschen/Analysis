@@ -416,7 +416,15 @@ def mapRootFile( rootFile ):
     rf.Map()
     rf.Close()
 
-def deepCheckRootFile( rootFile ):
+def scanRootFile( rootFile, var="nJet", thresh=200 ):
+    """ uses TChain.Scan() function to check entries for corrupt root files
+    """
+    tchain = ROOT.TChain( "Events" )
+    tchain.Add( rootFile )
+    tchain.Scan( "%s"%var, "%s>%i"%(var, thresh))
+    tchain.Delete()
+
+def deepCheckRootFile( rootFile, var="nJet", thresh=200 ):
     """ some root files are corrupt but can be opened and have all branches
         the error appears when checking every event after some time as a "basket" error
         this can be checked using TFile.Map()
@@ -425,8 +433,15 @@ def deepCheckRootFile( rootFile ):
     import shlex
     from subprocess import Popen, PIPE
 
-    cmd      = "python -c 'from Analysis.Tools.helpers import mapRootFile; mapRootFile(\"%s\")'"%rootFile
+#    cmd      = "python -c 'from Analysis.Tools.helpers import mapRootFile; mapRootFile(\"%s\")'"%rootFile
+#    proc     = Popen( shlex.split(cmd), stdout=PIPE, stderr=PIPE)
+#    out, err = proc.communicate()
+#    corrupt  = "G A P" in out
+#    if corrupt: return False
+
+    # Somehow Map() does not catch all the basket errors, so we now scan over a selection resulting in no events, but this throws an error
+    cmd      = "python -c 'from Analysis.Tools.helpers import scanRootFile; scanRootFile(\"%s\", var=\"%s\", thresh=%i)'"%(rootFile, var, thresh)
     proc     = Popen( shlex.split(cmd), stdout=PIPE, stderr=PIPE)
     out, err = proc.communicate()
-    return not "G A P" in out
 
+    return not "Error" in err
