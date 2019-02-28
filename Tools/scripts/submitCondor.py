@@ -105,28 +105,28 @@ if __name__ == '__main__':
         condorCommands  = []
         condorCommands += ["universe              = vanilla"]
         condorCommands += ["executable            = %s"%options.execFile]
+        condorCommands += ['+JobFlavour           = "%s"'%options.queue]
+        if options.discSpace:
+            condorCommands += ["request_disk          = %i"%(options.discSpace*1000)] # disc space in kB (MB*1000)
+        if options.memory:
+            condorCommands += ["request_memory        = %i"%(options.memory)] # memory in MB
+        if options.resubmitFailedJobs:
+            # Make sure your .sh file ends with the failing job!
+            # If e.g. there is an "echo ..." after the failing job, the .sh file returns an error code 0, as "echo" was successful
+            condorCommands += ["on_exit_remove        = ExitCode =?= 0"]
+            condorCommands += ["max_retries           = %i" %options.maxRetries]            
+        if options.dpm:
+            condorCommands += ["x509userproxy         = $ENV(X509_USER_PROXY)"]
+            condorCommands += ["use_x509userproxy     = true"]
 
         for i, command in enumerate(commands):
- 
             # condor commands for each job
             filename = command.replace(".py","").replace("  ","_").replace(" ","_").replace("--","")
-            condorCommands += ["output                = %s"%os.path.join(options.output, filename+".$$([NumJobStarts]).out")]
-            condorCommands += ["error                 = %s"%os.path.join(options.output, filename+".$$([NumJobStarts]).err")]
-            condorCommands += ["log                   = %s"%os.path.join(options.output, filename+".$$([NumJobStarts]).log")]
+            # NumJobStarts for creating an extra log file if the job restarts
+            condorCommands += ["output                = %s"%os.path.join(options.output, filename+".out")]
+            condorCommands += ["error                 = %s"%os.path.join(options.output, filename+".err")]
+            condorCommands += ["log                   = %s"%os.path.join(options.output, filename+".log")]
             condorCommands += ["arguments             = %s %s"%(rundir, command) ]
-            condorCommands += ['+JobFlavour           = "%s"'%options.queue]
-            if options.discSpace:
-                condorCommands += ["request_disk          = %i"%(options.discSpace*1000)] # disc space in kB (MB*1000)
-            if options.memory:
-                condorCommands += ["request_memory        = %i"%(options.memory)] # memory in MB
-            if options.resubmitFailedJobs:
-                # Make sure your .sh file ends with the failing job!
-                # If e.g. there is an "echo ..." after the failing job, the .sh file returns an error code 0, as "echo" was successful
-                condorCommands += ["on_exit_remove        = ExitCode =?= 0"]
-                condorCommands += ["max_retries           = %i" %options.maxRetries]            
-            if options.dpm:
-                condorCommands += ["x509userproxy         = $ENV(X509_USER_PROXY)"]
-                condorCommands += ["use_x509userproxy     = true"]
             condorCommands += ["queue 1"]
 
 # write a submit script
