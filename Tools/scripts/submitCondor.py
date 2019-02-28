@@ -110,9 +110,9 @@ if __name__ == '__main__':
  
             # condor commands for each job
             filename = command.replace(".py","").replace("  ","_").replace(" ","_").replace("--","")
-            condorCommands += ["output                = %s"%os.path.join(options.output, filename+".out")]
-            condorCommands += ["error                 = %s"%os.path.join(options.output, filename+".err")]
-            condorCommands += ["log                   = %s"%os.path.join(options.output, filename+".log")]
+            condorCommands += ["output                = %s"%os.path.join(options.output, filename+".$$([NumJobStarts]).out")]
+            condorCommands += ["error                 = %s"%os.path.join(options.output, filename+".$$([NumJobStarts]).err")]
+            condorCommands += ["log                   = %s"%os.path.join(options.output, filename+".$$([NumJobStarts]).log")]
             condorCommands += ["arguments             = %s %s"%(rundir, command) ]
             condorCommands += ['+JobFlavour           = "%s"'%options.queue]
             if options.discSpace:
