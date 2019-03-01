@@ -422,7 +422,7 @@ def scanRootFile( rootFile, var="nJet", thresh=200 ):
     tchain = ROOT.TChain( "Events" )
     tchain.Add( rootFile )
     tchain.Scan( "%s"%var, "%s>%i"%(var, thresh))
-    tchain.Delete()
+    tchain.Reset()
 
 def deepCheckRootFile( rootFile, var="nJet", thresh=200 ):
     """ some root files are corrupt but can be opened and have all branches
@@ -433,15 +433,15 @@ def deepCheckRootFile( rootFile, var="nJet", thresh=200 ):
     import shlex
     from subprocess import Popen, PIPE
 
-#    cmd      = "python -c 'from Analysis.Tools.helpers import mapRootFile; mapRootFile(\"%s\")'"%rootFile
-#    proc     = Popen( shlex.split(cmd), stdout=PIPE, stderr=PIPE)
-#    out, err = proc.communicate()
-#    corrupt  = "G A P" in out
-#    if corrupt: return False
+    cmd      = "python -c 'from Analysis.Tools.helpers import mapRootFile; mapRootFile(\"%s\")'"%rootFile
+    proc     = Popen( shlex.split(cmd), stdout=PIPE, stderr=PIPE)
+    out, err = proc.communicate()
+    # Desperate times call for desperate measures ... Somehow it is hard to catch all the errors
+    corrupt  = "E R R O R" in out or "G A P" in out or "-" in out
+    if corrupt: return False
 
     # Somehow Map() does not catch all the basket errors, so we now scan over a selection resulting in no events, but this throws an error
     cmd      = "python -c 'from Analysis.Tools.helpers import scanRootFile; scanRootFile(\"%s\", var=\"%s\", thresh=%i)'"%(rootFile, var, thresh)
     proc     = Popen( shlex.split(cmd), stdout=PIPE, stderr=PIPE)
     out, err = proc.communicate()
-
     return not "Error" in err
