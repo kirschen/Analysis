@@ -437,7 +437,8 @@ def deepCheckRootFile( rootFile, var="nJet", thresh=200 ):
     proc     = Popen( shlex.split(cmd), stdout=PIPE, stderr=PIPE)
     out, err = proc.communicate()
     # Desperate times call for desperate measures ... Somehow it is hard to catch all the errors
-    corrupt  = "E R R O R" in out or "G A P" in out or "-" in out
+    corrupt  = (not "KeysList" in out) or "E R R O R" in out or "G A P" in out or "-" in out
+#    corrupt  = "E R R O R" in out or "G A P" in out or "-" in out
     if corrupt: return False
 
     # Somehow Map() does not catch all the basket errors, so we now scan over a selection resulting in no events, but this throws an error
