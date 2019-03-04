@@ -118,53 +118,56 @@ if __name__ == "__main__":
 
     options = get_parser().parse_args()
 
-    preSel  = "(Sum$(Jet_pt>30&&abs(Jet_eta)<2.4&&Jet_jetId))>=2"
+    preSel  = "(Sum$(Jet_pt>30&&abs(Jet_eta)<2.5&&Jet_jetId>0))>=2"
     preSel += "&&"
     preSel += "(Sum$(Electron_pt>=20&&abs(Electron_eta)<2.4)+Sum$(Muon_pt>=20&&abs(Muon_eta)<2.4))>=2"
 
-    from Samples.nanoAOD.Summer16_private_legacy_v1 import TTLep_pow as tt16
-    from Samples.nanoAOD.Fall17_private_legacy_v1   import TTLep_pow as tt17
-    from Samples.nanoAOD.Autumn18_private_legacy_v1 import TTLep_pow as tt18
+    from Samples.Tools.config import redirector_global, redirector
+    redirector = redirector
+
 
     if options.year == 2016:
     # 2016
-        res = getBTagMCTruthEfficiencies2D( tt16.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagCSVV2', btagWP='0.8484', etaBins=etaBins2016 )
-        print "Efficiencies 2016:"
-        print res
-        print
-        writeToFile ( res, "TTLep_pow_2016_2j_2l_CSVv2_eta" )
+        from Samples.nanoAOD.Summer16_private_legacy_v1 import TTLep_pow as tt16
+        #res = getBTagMCTruthEfficiencies2D( tt16.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagCSVV2', btagWP='0.8484', etaBins=etaBins2016 )
+        #print "Efficiencies 2016:"
+        #print res
+        #print
+        #writeToFile ( res, "TTLep_pow_2016_2j_2l_CSVv2_eta" )
 
         res = getBTagMCTruthEfficiencies2D( tt16.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagDeepB', btagWP='0.6324', etaBins=etaBins2016 )
         print "Efficiencies 2016:"
         print res
         print
-        writeToFile ( res, "TTLep_pow_2016_2j_2l_DeepB_eta" )
+        writeToFile ( res, "TTLep_pow_2016_2j_2l_DeepB_eta_v2" )
 
     elif options.year == 2017:
     # 2017
-        res = getBTagMCTruthEfficiencies2D( tt17.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagCSVV2', btagWP='0.8838', etaBins=etaBins2017 )
-        print "Efficiencies 2017:"
-        print res
-        print
-        writeToFile ( res, "TTLep_pow_2017_2j_2l_CSVv2_eta" )
+        from Samples.nanoAOD.Fall17_14Dec2018   import TTLep_pow as tt17
+        #res = getBTagMCTruthEfficiencies2D( tt17.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagCSVV2', btagWP='0.8838', etaBins=etaBins2017 )
+        #print "Efficiencies 2017:"
+        #print res
+        #print
+        #writeToFile ( res, "TTLep_pow_2017_2j_2l_CSVv2_eta" )
 
         res = getBTagMCTruthEfficiencies2D( tt17.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagDeepB', btagWP='0.4941', etaBins=etaBins2017 )
         print "Efficiencies 2017:"
         print res
         print
-        writeToFile ( res, "TTLep_pow_2017_2j_2l_DeepB_eta" )
+        writeToFile ( res, "TTLep_pow_2017_2j_2l_DeepB_eta_v2" )
 
     elif options.year == 2018:
     # 2018
-        res = getBTagMCTruthEfficiencies2D( tt18.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagCSVV2', btagWP='0.8838', etaBins=etaBins2017 )
-        print "Efficiencies 2018:"
-        print res
-        writeToFile ( res, "TTLep_pow_2018_2j_2l_CSVv2_eta" )
+        from Samples.nanoAOD.Autumn18 import TTLep_pow as tt18
+        #res = getBTagMCTruthEfficiencies2D( tt18.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagCSVV2', btagWP='0.8838', etaBins=etaBins2017 )
+        #print "Efficiencies 2018:"
+        #print res
+        #writeToFile ( res, "TTLep_pow_2018_2j_2l_CSVv2_eta" )
 
-        res = getBTagMCTruthEfficiencies2D( tt18.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagDeepB', btagWP='0.4941', etaBins=etaBins2017 )
+        res = getBTagMCTruthEfficiencies2D( tt18.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagDeepB', btagWP='0.4184', etaBins=etaBins2018 )
         print "Efficiencies 2018:"
         print res
         print
-        writeToFile ( res, "TTLep_pow_2018_2j_2l_DeepB_eta" )
+        writeToFile ( res, "TTLep_pow_2018_2j_2l_DeepB_eta_v2" )
 
 
