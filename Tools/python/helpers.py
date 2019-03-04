@@ -469,7 +469,7 @@ def deepCheckWeight( file ):
     if file.startswith("root:"):
         sample = Sample.fromDPMDirectory(name="sample", treeName="Events", directory=file)
     else:
-        sample = Sample.fromDirectory(name="sample", treeName="Events", directory=file)
+        sample = Sample.fromFiles(name="sample", treeName="Events", files=file)
     val = sample.getYieldFromDraw(weightString="weight" )['val']
     del sample
 
