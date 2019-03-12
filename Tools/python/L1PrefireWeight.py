@@ -9,7 +9,7 @@ https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1ECALPrefiringWeightRecipe
 
 import os
 import math
-from StopsDilepton.tools.helpers import getObjFromFile, deltaR
+from Analysis.Tools.helpers import getObjFromFile, deltaR
 
 class L1PrefireWeight:
     def __init__(self, year, syst=0.2):
