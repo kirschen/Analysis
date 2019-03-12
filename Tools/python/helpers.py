@@ -422,7 +422,15 @@ def scanRootFile( rootFile, var="nJet", thresh=200 ):
     tchain = ROOT.TChain( "Events" )
     tchain.Add( rootFile )
     tchain.Scan( "%s"%var, "%s>%i"%(var, thresh))
-    tchain.Delete()
+    tchain.Reset()
+
+def checkWeight( rootFile ):
+    """ uses TChain.Scan() function to check entries for corrupt root files
+    """
+    tchain = ROOT.TChain( "Events" )
+    tchain.Add( rootFile )
+    tchain.Scan( "weight", "TMath::IsNaN(weight)")
+    tchain.Reset()
 
 def deepCheckRootFile( rootFile, var="nJet", thresh=200 ):
     """ some root files are corrupt but can be opened and have all branches
@@ -433,15 +441,37 @@ def deepCheckRootFile( rootFile, var="nJet", thresh=200 ):
     import shlex
     from subprocess import Popen, PIPE
 
-#    cmd      = "python -c 'from Analysis.Tools.helpers import mapRootFile; mapRootFile(\"%s\")'"%rootFile
-#    proc     = Popen( shlex.split(cmd), stdout=PIPE, stderr=PIPE)
-#    out, err = proc.communicate()
-#    corrupt  = "G A P" in out
-#    if corrupt: return False
-
-    # Somehow Map() does not catch all the basket errors, so we now scan over a selection resulting in no events, but this throws an error
-    cmd      = "python -c 'from Analysis.Tools.helpers import scanRootFile; scanRootFile(\"%s\", var=\"%s\", thresh=%i)'"%(rootFile, var, thresh)
+    cmd      = "python -c 'from Analysis.Tools.helpers import mapRootFile; mapRootFile(\"%s\")'"%rootFile
     proc     = Popen( shlex.split(cmd), stdout=PIPE, stderr=PIPE)
     out, err = proc.communicate()
+    # Desperate times call for desperate measures ... Somehow it is hard to catch all the errors
+#    corrupt  = "E R R O R" in out or "G A P" in out or "-" in out
+    good  = "KeysList" in out
+    return good 
 
-    return not "Error" in err
+    # Somehow Map() does not catch all the basket errors, so we now scan over a selection resulting in no events, but this throws an error
+#    cmd      = "python -c 'from Analysis.Tools.helpers import scanRootFile; scanRootFile(\"%s\", var=\"%s\", thresh=%i)'"%(rootFile, var, thresh)
+#    proc     = Popen( shlex.split(cmd), stdout=PIPE, stderr=PIPE)
+#    out, err = proc.communicate()
+#    return not "Error" in err
+
+def deepCheckWeight( file ):
+    """ some root files only contain the branches kept from the beginning
+        but not those from the filler, e.g. the weight branch
+        Those files are identified here, as weight==nan and thus the yield is nan
+    """
+    from math import isnan
+    from RootTools.core.Sample import Sample
+
+    # convert dpm file pathes
+    if file.startswith("root:"): file = "/dpm/" + file.split("/dpm/")[1]
+
+    if file.startswith("root:"):
+        sample = Sample.fromDPMDirectory(name="sample", treeName="Events", directory=file)
+    else:
+        sample = Sample.fromFiles(name="sample", treeName="Events", files=file)
+    val = sample.getYieldFromDraw(weightString="weight" )['val']
+    del sample
+
+    return not isnan(val)
+    
