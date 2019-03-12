@@ -8,29 +8,48 @@ from Analysis.Tools.u_float import u_float
 lumiRatio2016_BCDEF = 19.717640795 / 35.863818448
 lumiRatio2016_GH    = 16.146177653 / 35.863818448
 
-keys_mu2016_BCDEF = [( "muon2016_RunBCDEF_SF_ID.root",  "NUM_MediumID_DEN_genTracks_eta_pt"   ),
-                     ( "muon2016_RunBCDEF_SF_ISO.root", "NUM_TightRelIso_DEN_MediumID_eta_pt" )]
 
-keys_mu2016_GH    = [( "muon2016_RunGH_SF_ID.root",     "NUM_MediumID_DEN_genTracks_eta_pt"   ),
-                     ( "muon2016_RunGH_SF_ISO.root",    "NUM_TightRelIso_DEN_MediumID_eta_pt" )]
+keys_mu2016_BCDEF = { "medium":[( "muon2016_RunBCDEF_SF_ID.root",  "NUM_MediumID_DEN_genTracks_eta_pt"   ),
+                                ( "muon2016_RunBCDEF_SF_ISO.root", "NUM_TightRelIso_DEN_MediumID_eta_pt" )],
+                      "tight": [( "muon2016_RunBCDEF_SF_ID.root",  "NUM_TightID_DEN_genTracks_eta_pt"   ),
+                                ( "muon2016_RunBCDEF_SF_ISO.root", "NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt" )]
+                    }
 
-keys_ele2016      = [( "e2016_LegacyReReco_ElectronMedium.root", "EGamma_SF2D" )]
+keys_mu2016_GH    = { "medium":[( "muon2016_RunGH_SF_ID.root",     "NUM_MediumID_DEN_genTracks_eta_pt"   ),
+                                ( "muon2016_RunGH_SF_ISO.root",    "NUM_TightRelIso_DEN_MediumID_eta_pt" )],
+                      "tight": [( "muon2016_RunGH_SF_ID.root",     "NUM_TightID_DEN_genTracks_eta_pt"   ),
+                                ( "muon2016_RunGH_SF_ISO.root",    "NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt" )]
+                    }
 
-keys_mu2017       = [( "muon2017_RunBCDEF_SF_ID.root",  "NUM_MediumID_DEN_genTracks_pt_abseta"   ),
-                     ( "muon2017_RunBCDEF_SF_ISO.root", "NUM_TightRelIso_DEN_MediumID_pt_abseta" )]
+keys_ele2016      = { "medium":[( "e2016_LegacyReReco_ElectronMedium.root", "EGamma_SF2D" )],
+                      "tight": [( "e2016_LegacyReReco_ElectronTight.root", "EGamma_SF2D" )],
+                    }
 
-keys_ele2017      = [( "e2017_ElectronMediumCutBased.root", "EGamma_SF2D" )]
+keys_mu2017       = { "medium":[( "muon2017_RunBCDEF_SF_ID.root",  "NUM_MediumID_DEN_genTracks_pt_abseta"   ),
+                                ( "muon2017_RunBCDEF_SF_ISO.root", "NUM_TightRelIso_DEN_MediumID_pt_abseta" )],
+                      "tight": [( "muon2017_RunBCDEF_SF_ID.root",  "NUM_TightID_DEN_genTracks_pt_abseta"   ),
+                                ( "muon2017_RunBCDEF_SF_ISO.root", "NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta" )]
+                    }
 
-# UPDATE MUON SF 2018 WHEN AVAILABLE
-keys_mu2018       = [( "muon2017_RunBCDEF_SF_ID.root",  "NUM_MediumID_DEN_genTracks_pt_abseta"   ),
-                     ( "muon2017_RunBCDEF_SF_ISO.root", "NUM_TightRelIso_DEN_MediumID_pt_abseta" )]
+keys_ele2017      = { "medium":[( "e2017_ElectronMediumCutBased.root", "EGamma_SF2D" )],
+                      "tight": [( "e2017_ElectronTight.root", "EGamma_SF2D" )]
+                    }
 
-keys_ele2018      = [( "e2018_ElectronMedium.root", "EGamma_SF2D" )]
+keys_mu2018       = { "medium":[( "mu2018_RunABCD_SF_ID.root",  "NUM_MediumID_DEN_genTracks_pt_abseta"   ),
+                                ( "mu2018_RunABCD_SF_ISO.root", "NUM_TightRelIso_DEN_MediumID_pt_abseta" )],
+                      "tight": [( "mu2018_RunABCD_SF_ID.root",  "NUM_TightID_DEN_genTracks_pt_abseta"   ),
+                                ( "mu2018_RunABCD_SF_ISO.root", "NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta" )]
+                    }
+
+
+keys_ele2018      = { "medium":[( "e2018_ElectronMedium.root", "EGamma_SF2D" )],
+                      "tight": [( "e2018_ElectronTight.root", "EGamma_SF2D" )]
+                    }
 
 
 class LeptonSF:
 
-    def __init__(self, year=2016):
+    def __init__(self, year=2016, ID=None):
 
         if year not in [ 2016, 2017, 2018 ]:
             raise Exception("Lepton SF for year %i not known"%year)
@@ -39,19 +58,46 @@ class LeptonSF:
         self.year    = year
 
         if year == 2016:
-            self.mu_BCDEF = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_mu2016_BCDEF ]
-            self.mu_GH    = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_mu2016_GH    ]
-            self.ele      = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_ele2016      ]
+
+            if not ID in keys_mu2016_BCDEF.keys():
+                raise Exception("Don't know ID %s"%ID)
+
+            if not ID in keys_mu2016_GH.keys():
+                raise Exception("Don't know ID %s"%ID)
+
+            if not ID in keys_ele2016.keys():
+                raise Exception("Don't know ID %s"%ID)
+
+            self.mu_BCDEF = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_mu2016_BCDEF[ID] ]
+            self.mu_GH    = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_mu2016_GH[ID]    ]
+            self.ele      = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_ele2016[ID]      ]
+
             for effMap in self.mu_BCDEF + self.mu_GH + self.ele: assert effMap
 
         elif year == 2017:
-            self.mu       = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_mu2017       ]
-            self.ele      = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_ele2017      ]
+
+            if not ID in keys_mu2017.keys():
+                raise Exception("Don't know ID %s"%ID)
+
+            if not ID in keys_ele2017.keys():
+                raise Exception("Don't know ID %s"%ID)
+
+            self.mu       = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_mu2017[ID]       ]
+            self.ele      = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_ele2017[ID]      ]
+
             for effMap in self.mu + self.ele: assert effMap
 
         elif year == 2018:
-            self.mu       = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_mu2018       ]
-            self.ele      = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_ele2018      ]
+
+            if not ID in keys_mu2018.keys():
+                raise Exception("Don't know ID %s"%ID)
+
+            if not ID in keys_ele2018.keys():
+                raise Exception("Don't know ID %s"%ID)
+
+            self.mu       = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_mu2018[ID]       ]
+            self.ele      = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_ele2018[ID]      ]
+
             for effMap in self.mu + self.ele: assert effMap
 
     def getPartialSF( self, effMap, pt, eta, reversed=False ):
@@ -101,3 +147,138 @@ class LeptonSF:
                 sf = self.mult( [ self.getPartialSF( effMap, pt, eta ) for effMap in self.ele ] )
 
         return (1+sf.sigma*sigma)*sf.val
+
+
+if __name__ == "__main__":
+
+    print "2016, medium"
+    LSF = LeptonSF(year=2016, ID="medium")
+    print LSF.getSF(11, 20, 1)
+    print LSF.getSF(11, 20, -1)
+    print LSF.getSF(13, 20, 1)
+    print LSF.getSF(13, 20, -1)
+
+    print LSF.getSF(11, 200, 1)
+    print LSF.getSF(11, 200, -1)
+    print LSF.getSF(13, 200, 1)
+    print LSF.getSF(13, 200, -1)
+
+    print LSF.getSF(11, 20, 2.5)
+    print LSF.getSF(11, 20, -2.5)
+    print LSF.getSF(13, 20, 2.5)
+    print LSF.getSF(13, 20, -2.5)
+
+    print LSF.getSF(11, 200, 2.5)
+    print LSF.getSF(11, 200, -2.5)
+    print LSF.getSF(13, 200, 2.5)
+    print LSF.getSF(13, 200, -2.5)
+
+    print "2016, tight"
+    LSF = LeptonSF(year=2016, ID="tight")
+    print LSF.getSF(11, 20, 1)
+    print LSF.getSF(11, 20, -1)
+    print LSF.getSF(13, 20, 1)
+    print LSF.getSF(13, 20, -1)
+
+    print LSF.getSF(11, 200, 1)
+    print LSF.getSF(11, 200, -1)
+    print LSF.getSF(13, 200, 1)
+    print LSF.getSF(13, 200, -1)
+
+    print LSF.getSF(11, 20, 2.5)
+    print LSF.getSF(11, 20, -2.5)
+    print LSF.getSF(13, 20, 2.5)
+    print LSF.getSF(13, 20, -2.5)
+
+    print LSF.getSF(11, 200, 2.5)
+    print LSF.getSF(11, 200, -2.5)
+    print LSF.getSF(13, 200, 2.5)
+    print LSF.getSF(13, 200, -2.5)
+
+    print "2017, medium"
+    LSF = LeptonSF(year=2017, ID="medium")
+    print LSF.getSF(11, 20, 1)
+    print LSF.getSF(11, 20, -1)
+    print LSF.getSF(13, 20, 1)
+    print LSF.getSF(13, 20, -1)
+
+    print LSF.getSF(11, 200, 1)
+    print LSF.getSF(11, 200, -1)
+    print LSF.getSF(13, 200, 1)
+    print LSF.getSF(13, 200, -1)
+
+    print LSF.getSF(11, 20, 2.5)
+    print LSF.getSF(11, 20, -2.5)
+    print LSF.getSF(13, 20, 2.5)
+    print LSF.getSF(13, 20, -2.5)
+
+    print LSF.getSF(11, 200, 2.5)
+    print LSF.getSF(11, 200, -2.5)
+    print LSF.getSF(13, 200, 2.5)
+    print LSF.getSF(13, 200, -2.5)
+
+    print "2017, tight"
+    LSF = LeptonSF(year=2017, ID="tight")
+    print LSF.getSF(11, 20, 1)
+    print LSF.getSF(11, 20, -1)
+    print LSF.getSF(13, 20, 1)
+    print LSF.getSF(13, 20, -1)
+
+    print LSF.getSF(11, 200, 1)
+    print LSF.getSF(11, 200, -1)
+    print LSF.getSF(13, 200, 1)
+    print LSF.getSF(13, 200, -1)
+
+    print LSF.getSF(11, 20, 2.5)
+    print LSF.getSF(11, 20, -2.5)
+    print LSF.getSF(13, 20, 2.5)
+    print LSF.getSF(13, 20, -2.5)
+
+    print LSF.getSF(11, 200, 2.5)
+    print LSF.getSF(11, 200, -2.5)
+    print LSF.getSF(13, 200, 2.5)
+    print LSF.getSF(13, 200, -2.5)
+
+    print "2018, medium"
+    LSF = LeptonSF(year=2018, ID="medium")
+    print LSF.getSF(11, 20, 1)
+    print LSF.getSF(11, 20, -1)
+    print LSF.getSF(13, 20, 1)
+    print LSF.getSF(13, 20, -1)
+
+    print LSF.getSF(11, 200, 1)
+    print LSF.getSF(11, 200, -1)
+    print LSF.getSF(13, 200, 1)
+    print LSF.getSF(13, 200, -1)
+
+    print LSF.getSF(11, 20, 2.5)
+    print LSF.getSF(11, 20, -2.5)
+    print LSF.getSF(13, 20, 2.5)
+    print LSF.getSF(13, 20, -2.5)
+
+    print LSF.getSF(11, 200, 2.5)
+    print LSF.getSF(11, 200, -2.5)
+    print LSF.getSF(13, 200, 2.5)
+    print LSF.getSF(13, 200, -2.5)
+
+    print "2018, tight"
+    LSF = LeptonSF(year=2018, ID="tight")
+    print LSF.getSF(11, 20, 1)
+    print LSF.getSF(11, 20, -1)
+    print LSF.getSF(13, 20, 1)
+    print LSF.getSF(13, 20, -1)
+
+    print LSF.getSF(11, 200, 1)
+    print LSF.getSF(11, 200, -1)
+    print LSF.getSF(13, 200, 1)
+    print LSF.getSF(13, 200, -1)
+
+    print LSF.getSF(11, 20, 2.5)
+    print LSF.getSF(11, 20, -2.5)
+    print LSF.getSF(13, 20, 2.5)
+    print LSF.getSF(13, 20, -2.5)
+
+    print LSF.getSF(11, 200, 2.5)
+    print LSF.getSF(11, 200, -2.5)
+    print LSF.getSF(13, 200, 2.5)
+    print LSF.getSF(13, 200, -2.5)
