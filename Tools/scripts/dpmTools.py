@@ -10,17 +10,34 @@ def getDPMFiles( path ):
     p = subprocess.Popen( ["dpns-ls %s" %path], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
     return [ item.rstrip("\n") for item in p.stdout.readlines() ]
 
-def convertToPathList( path ):
+def convertToPathList( path, local=False ):
     """ convert path with ending * to list of pathes with all possible files
     """
     dirPath   = "/".join( path.split("/")[:-1] ) + "/"
-    fileStart = path.split("/")[-1].rstrip("*")
+    fileParts = path.split("/")[-1].split("*") if not path.split("/")[-1] == "*" else [""]
 
-    if path.endswith("*"):
-        allFiles  = getDPMFiles(dirPath)
-        pathList  = [ os.path.join( dirPath, file ) for file in allFiles if file.startswith( fileStart ) ]
+    if len(fileParts) > 1:
+        # copy abc*fg*jkl*
+        pathList = []
+        allFiles = os.listdir(dirPath) if local else getDPMFiles(dirPath)
+        for file in allFiles:
+            subString = file
+            copyFile  = True
+            # check if all parts are contained in filename in the right order
+            for part in fileParts:
+                if not part: continue
+                if not part in subString:
+                    copyFile = False
+                    break
+                subString = "".join( subString.split( part )[1:] )
+            if copyFile:
+                pathList.append( os.path.join( dirPath, file ) )
+
+    elif fileParts[0] == "":
+        allFiles = os.listdir(dirPath) if local else getDPMFiles(dirPath)
+        pathList  = [ os.path.join( dirPath, file ) for file in allFiles ]
     else:
-        pathList  = [ os.path.join( dirPath, fileStart ) ]
+        pathList  = [ os.path.join( dirPath, fileParts[0] ) ]
 
     return pathList
 
@@ -68,23 +85,27 @@ def isFile( path ):
 
     return "." in path.split("/")[-1]
 
-def copyDPMFiles( fromPath, toPath ):
+def copyDPMFiles( fromPath, toPath, toLocal=False, fromLocal=False ):
     """ copy files or directories including subdirectories
     """
 
-    fromPathList = convertToPathList( fromPath )
-    makeDPMDir( toPath )
+    fromPathList = convertToPathList( fromPath, local=fromLocal )
+    if toLocal:
+        if not os.path.isdir( toPath ): os.makedirs( toPath )
+    else:
+        makeDPMDir( toPath )
 
     for file in fromPathList:
         if isFile( file ):
             logger.info( "Copying %s to %s"%( file, toPath ) )
-            os.system( "xrdcp -r %s%s %s%s"%(redir, file, redir, toPath) )
+            cmd = "xrdcp -r %s%s %s%s"%(redir if not fromLocal else "", file, redir if not toLocal else "", toPath)
+            os.system( cmd )
         else:
             subdir          = file.split("/")[-1]
             subFromPath     = os.path.join( file,   "*" )
             subToPath       = os.path.join( toPath, subdir+"/" )
 #            logger.info( "Creating subdirectory %s"%subToPath )
-            copyDPMFiles( subFromPath, subToPath )
+            copyDPMFiles( subFromPath, subToPath, toLocal=toLocal, fromLocal=fromLocal )
 
 
 if __name__ == "__main__":
@@ -97,10 +118,12 @@ if __name__ == "__main__":
         '''
         import argparse
         argParser = argparse.ArgumentParser(description = "Argument parser for nanoPostProcessing")
-        argParser.add_argument('--ls',    action='store', type=str,          help="list dpm path content")
-        argParser.add_argument('--cp',    action='store', type=str, nargs=2, help="copy dpm files")
-        argParser.add_argument('--mkdir', action='store', type=str,          help="make dpm dir")
-        argParser.add_argument('--rm',    action='store', type=str,          help="dpm path to remove")
+        argParser.add_argument('--ls',        action='store',      type=str,          help="list dpm path content")
+        argParser.add_argument('--cp',        action='store',      type=str, nargs=2, help="copy dpm files")
+        argParser.add_argument('--fromLocal', action='store_true',                    help="copy from local directory")
+        argParser.add_argument('--toLocal',   action='store_true',                    help="copy to local directory")
+        argParser.add_argument('--mkdir',     action='store',      type=str,          help="make dpm dir")
+        argParser.add_argument('--rm',        action='store',      type=str,          help="dpm path to remove")
         return argParser
 
     args = get_parser().parse_args()
@@ -127,12 +150,12 @@ if __name__ == "__main__":
     elif args.cp:
         fromPath, toPath = args.cp
 
-        if not fromPath.startswith("/dpm/"):
+        if not fromPath.startswith("/dpm/") and not args.fromLocal:
             fromPath = os.path.join( dpm_directory, fromPath )
-        if not toPath.startswith("/dpm/"):
+        if not toPath.startswith("/dpm/") and not args.toLocal:
             toPath = os.path.join( dpm_directory, toPath )
 
-        copyDPMFiles( fromPath, toPath )
+        copyDPMFiles( fromPath, toPath, toLocal=args.toLocal, fromLocal=args.fromLocal )
 
     elif args.mkdir:
         if not args.mkdir.startswith("/dpm/"):
