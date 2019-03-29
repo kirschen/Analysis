@@ -71,7 +71,6 @@ def getTotalPostFitUncertainty(cardFile, binName):
             for i,b in enumerate(binList):
                 if b == binName:
                     ind.append(i) 
-          print ind
         if line.split()[0] == "process":
           if not estimateList:
             estimateList = line.split()[1:]
@@ -82,8 +81,6 @@ def getTotalPostFitUncertainty(cardFile, binName):
         if line.split()[0] == 'PU': uncertainties = True
         if uncertainties:
             uncDict[line.split()[0]] = [ 0 if a =='-' else float(a)-1 for a in line.split()[2:][ind[1]:ind[-1]+1] ]
-    print estimateList
-    print estimates
     nuisanceFile = cardFile.replace('.txt','_nuisances_full.txt')
     for unc in uncDict.keys():
         totalUnc[unc] = 0
@@ -91,7 +88,6 @@ def getTotalPostFitUncertainty(cardFile, binName):
             #totalUnc[unc] += uncDict[unc][i] * estimates[i] * ( 1 + getPull(nuisanceFile,unc)*uncDict[unc][i] ) #* getConstrain(nuisanceFile, unc)
             totalUnc[unc] += uncDict[unc][i] * estimates[i] * math.exp( getPull(nuisanceFile,unc)*uncDict[unc][i] )
             #totalUnc[unc] += (uncDict[unc][i] * estimates[i] * math.exp( getPull(nuisanceFile,unc)*uncDict[unc][i] ))**2
-        if totalUnc[unc] > 0: print unc, totalUnc[unc]
         #totalUnc[unc] = math.sqrt(totalUnc[unc])
     total = 0
     for unc in totalUnc.keys():
@@ -188,7 +184,7 @@ def getRegionCuts(cardFile):
         for line in f:
             if not line.startswith("# "): continue
             for bin in binNames:
-                if not bin in line: continue
+                if not bin+":" in line: continue
                 regionCuts[bin] = line.split(" ")[-1].split("\n")[0]
                 break
     return regionCuts
@@ -202,18 +198,26 @@ def getAllBinNames(cardFile):
                 return binList
 
 def getAllProcesses(cardFile):
+    i           = 0
+    bins        = getAllBinNames(cardFile)
+    processDict = {}
+    done        = False
     with open(cardFile) as f:
         for line in f:
             if len(line.split())==0: continue
             if line.split()[0] == "process":
-                processList = []
                 # complex syntax needed to get the right order, set() mixes it up
-                for proc in line.split()[1:]:
-                    if not processList or proc != processList[0]:
+                done = True
+                processList = []
+                for proc in line.split()[i+1:]:
+                    if proc not in processList:
                         processList.append(proc)
-                    elif proc == processList[0]:
-                        break
-                return processList
+                    else:
+                        processDict.update( {bins[i]:processList} )
+                        processList = [proc]
+                        i += 1
+                processDict.update( {bins[i]:processList} )
+            if done: return processDict
 
 def scaleCardFile(cardFile, outFile=None, scale=1., scaledProcesses=None, copyUncertainties=True):
 
@@ -227,8 +231,12 @@ def scaleCardFile(cardFile, outFile=None, scale=1., scaledProcesses=None, copyUn
         shutil.copyfile( cardFile, tmpFile )
         cardFile = tmpFile
         
-    regions     = getAllBinNames(cardFile)
-    processes   = getAllProcesses(cardFile)
+    regions      = getAllBinNames(cardFile)
+    processDict  = getAllProcesses(cardFile)
+    allProcesses = []
+    for key, val in processDict.iteritems():
+        allProcesses += val
+    allProcesses = list( set( allProcesses ) )
 
     if isinstance( scale, dict ):
         if set(scale.keys()) - set(regions):
@@ -239,26 +247,26 @@ def scaleCardFile(cardFile, outFile=None, scale=1., scaledProcesses=None, copyUn
     else:
         scale = { region:scale for region in regions }                
 
-    print scale
+    if scaledProcesses:
+        if not isinstance( scaledProcesses, list ):
+            scaledProcesses = [ scaledProcesses ]
 
-    if scaledProcesses is None:
-        scaledProcesses = processes
-    else:
-        notContained = list(set(scaledProcesses) - set(processes))
+        notContained = list(set(scaledProcesses) - set(allProcesses))
         if notContained:
             raise Exception("Processes from scaledProcesses not in cardFile: %s"%", ".join(notContained))
-
-    bgProcesses = copy.copy(processes)
-    bgProcesses.remove("signal")
 
     c = CardFileWriter()
 
     for region in regions:
 
+        processes   = processDict[region]
+        bgProcesses = copy.copy(processes)
+        bgProcesses.remove("signal")
+
         totYield = 0
         for proc in processes:
             rate = getEstimateFromCard(cardFile, proc, region).val
-            if proc in scaledProcesses: rate *= scale[region]
+            if not scaledProcesses or proc in scaledProcesses: rate *= scale[region]
             c.specifyExpectation( region, proc, round( rate, 5 ) )
             totYield += rate
 
@@ -274,6 +282,7 @@ def scaleCardFile(cardFile, outFile=None, scale=1., scaledProcesses=None, copyUn
         flag = False
         with open(cardFile, "r") as f:
             with open(outFile, "a") as of:
+                of.write("")
                 for line in f:
                     if flag: of.write(line)
                     elif line.startswith("rate"): flag = True
