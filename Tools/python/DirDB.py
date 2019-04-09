@@ -67,4 +67,4 @@ if __name__ == "__main__":
 
     dirDB.add('y',1)
     dirDB.add(3,1)
-    dirDB.add((2,3),ROOT.TH1F('x','x',100,0,1), True)
+    dirDB.add((2,3),ROOT.TH1F('x','x',100,0,1))
