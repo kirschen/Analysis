@@ -5,6 +5,7 @@
 # Standard imports
 import ROOT
 import array
+import uuid
 
 # Logger
 import logging
@@ -33,11 +34,11 @@ class QuantileMatcher:
         self.h1.Scale(1./self.h1.Integral()) 
         self.h2.Scale(1./self.h2.Integral())
 
-        self.h1_cdf = h1.GetCumulative() 
-        self.h2_cdf_inv = transpose( h2.GetCumulative() )
+        self.h1_cdf = h1.GetCumulative(True, str(uuid.uuid4())) 
+        self.h2_cdf_inv = transpose( h2.GetCumulative(True, str(uuid.uuid4())) )
 
     def predict( self, x ):
-        return self.h2_cdf_inv.GetBinContent(self.h2_cdf_inv.FindBin( self.h1_cdf.GetBinContent(self.h1_cdf.FindBin( x )) ))
+        return self.h2_cdf_inv.Interpolate(  self.h1_cdf.Interpolate( x ) )
 
 if __name__=="__main__":
 #    q = QuantileMatcher( h1, h2 )
