@@ -6,6 +6,10 @@
 import ROOT
 import array
 
+# Logger
+import logging
+logger = logging.getLogger(__name__)
+
 def transpose( h ):
 
     y = [h.GetBinContent( i ) for i in range( 1, 1+h.GetNbinsX() ) ]
@@ -38,8 +42,7 @@ class QuantileMatcher:
 if __name__=="__main__":
 #    q = QuantileMatcher( h1, h2 )
     import pickle
-    fitResults = pickle.load(file('/afs/hephy.at/user/r/rschoefbeck/www/StopsDilepton/recoil_v2/2016/lepSel-btag0-relIso0.12-looseLeptonVeto-mll20-onZ/recoil_fitResults_mumu.pkl'))
-
+    fitResults = pickle.load(file('/afs/hephy.at/user/r/rschoefbeck/www/StopsDilepton/recoil_v2/2018/lepSel-btag0-relIso0.12-looseLeptonVeto-mll20-onZ/recoil_fitResults_SF.pkl'))
     h1, h2 = fitResults[(2,3)][(50,100)]['para']['mc']['TH1F'], fitResults[(2,3)][(50,100)]['para']['data']['TH1F']
 
     h1.Scale(1./h1.Integral()) 
@@ -48,4 +51,4 @@ if __name__=="__main__":
     h1_cdf = h1.GetCumulative() 
     h2_cdf_inv = transpose( h2.GetCumulative() )
 
-    qm = QuantileMatcher( h1, h1 )
+    qm = QuantileMatcher( h1, h2 )
