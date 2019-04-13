@@ -14,10 +14,12 @@ fi
 echo "Calculating PU 2018 XSecVDown"
 pileupCalc.py -i $JSON --inputLumiJSON $PILEUP_LATEST --calcMode true --minBiasXsec 62280 --maxPileupBin 100 --numPileupBins 100 PU_2018_${LUMI}_XSecVDown.root
 echo "Calculating PU 2018 XSecDown"
-pileupCalc.py -i $JSON --inputLumiJSON $PILEUP_LATEST --calcMode true --minBiasXsec 66986 --maxPileupBin 100 --numPileupBins 100 PU_2018_${LUMI}_XSecDown.root
+pileupCalc.py -i $JSON --inputLumiJSON $PILEUP_LATEST --calcMode true --minBiasXsec 65740 --maxPileupBin 100 --numPileupBins 100 PU_2018_${LUMI}_XSecDown.root
 echo "Calculating PU 2018 XSecCentral"
 pileupCalc.py -i $JSON --inputLumiJSON $PILEUP_LATEST --calcMode true --minBiasXsec 69200 --maxPileupBin 100 --numPileupBins 100 PU_2018_${LUMI}_XSecCentral.root
 echo "Calculating PU 2018 XSecUp"
-pileupCalc.py -i $JSON --inputLumiJSON $PILEUP_LATEST --calcMode true --minBiasXsec 71414 --maxPileupBin 100 --numPileupBins 100 PU_2018_${LUMI}_XSecUp.root
+pileupCalc.py -i $JSON --inputLumiJSON $PILEUP_LATEST --calcMode true --minBiasXsec 72660 --maxPileupBin 100 --numPileupBins 100 PU_2018_${LUMI}_XSecUp.root
 echo "Calculating PU 2018 XSecVUp"
 pileupCalc.py -i $JSON --inputLumiJSON $PILEUP_LATEST --calcMode true --minBiasXsec 76120 --maxPileupBin 100 --numPileupBins 100 PU_2018_${LUMI}_XSecVUp.root
+echo "Calculating PU 2018 XSecVVUp"
+pileupCalc.py -i $JSON --inputLumiJSON $PILEUP_LATEST --calcMode true --minBiasXsec 79580 --maxPileupBin 100 --numPileupBins 100 PU_2018_${LUMI}_XSecVVUp.root
