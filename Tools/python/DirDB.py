@@ -41,6 +41,11 @@ class DirDB:
 
         return result
 
+    def contains(self, key):
+        ''' We got that thing?
+        '''
+        return os.path.exists( self.__get_filename(key) )
+
     def add(self, key, data, overwrite=False):
 
         filename = os.path.join( self.directory, self.__get_filename(key)) 
