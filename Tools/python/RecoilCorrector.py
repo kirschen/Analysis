@@ -17,7 +17,7 @@ class RecoilCorrector:
 
     def __init__(self, filename ):
         self.filename    = filename
-        self.correction_data = pickle.load(file('/afs/hephy.at/user/r/rschoefbeck/www/StopsDilepton/recoil_v2/2018/lepSel-btag0-relIso0.12-looseLeptonVeto-mll20-onZ/recoil_fitResults_SF.pkl'))
+        self.correction_data = pickle.load(file(self.filename))
 
         self.njet_bins = self.correction_data.keys()
         self.max_njet  = max( map( max, self.njet_bins )) 
