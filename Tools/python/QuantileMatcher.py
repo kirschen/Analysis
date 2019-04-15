@@ -40,10 +40,28 @@ class QuantileMatcher:
     def predict( self, x ):
         return self.h2_cdf_inv.Interpolate(  self.h1_cdf.Interpolate( x ) )
 
+    def prediction_histo( self, n_bins, u_low, h_high ):
+        name = str(uuid.uuid4())
+        h = ROOT.TH1F(name,name,  n_bins, u_low, h_high)
+        for i in range(1, n_bins+1):
+            h.SetBinContent( i, self.predict( h.GetBinLowEdge(i)) )
+        return h 
+
+    @staticmethod
+    def __get_quantiles( histo, quantiles):
+        thresholds = array.array('d', [ROOT.Double()] * len(quantiles) )
+        histo.GetQuantiles( len(quantiles), thresholds, array.array('d', quantiles) )
+        return thresholds 
+
+    def get_h1_quantiles( self, quantiles = [ 0.31, 0.5, 0.68] ):
+        return self.__get_quantiles( self.h1, quantiles)
+    def get_h2_quantiles( self, quantiles = [ 0.31, 0.5, 0.68] ):
+        return self.__get_quantiles( self.h2, quantiles)
+
 if __name__=="__main__":
 #    q = QuantileMatcher( h1, h2 )
     import pickle
-    fitResults = pickle.load(file('/afs/hephy.at/user/r/rschoefbeck/www/StopsDilepton/recoil_v2/2018/lepSel-btag0-relIso0.12-looseLeptonVeto-mll20-onZ/recoil_fitResults_SF.pkl'))
+    fitResults = pickle.load(file('/afs/hephy.at/data/rschoefbeck01/StopsDilepton/results/recoilCorrections/2018_postHEM_recoil_fitResults_SF.pkl'))
     h1, h2 = fitResults[(2,3)][(50,100)]['para']['mc']['TH1F'], fitResults[(2,3)][(50,100)]['para']['data']['TH1F']
 
     h1.Scale(1./h1.Integral()) 
@@ -53,3 +71,14 @@ if __name__=="__main__":
     h2_cdf_inv = transpose( h2.GetCumulative() )
 
     qm = QuantileMatcher( h1, h2 )
+
+    c1 = ROOT.TCanvas()
+    h  = qm.prediction_histo(100,-200,200)
+    h.Draw()
+    h.GetXaxis().SetTitle( "raw u_{#parallel}")
+    h.GetYaxis().SetTitle( "predicted u_{#parallel}")
+    ROOT.gStyle.SetOptStat(0)
+    ROOT.TLine(-200,-200,200,200)
+    l=ROOT.TLine(-200,-200,200,200)
+    l.Draw()
+    c1.Print('/afs/hephy.at/user/r/rschoefbeck/www/etc/recoil_test.png')
