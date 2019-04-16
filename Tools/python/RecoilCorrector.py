@@ -20,10 +20,12 @@ class RecoilCorrector:
         self.correction_data = pickle.load(file(self.filename))
 
         self.njet_bins = self.correction_data.keys()
+        self.njet_bins.sort()
         self.max_njet  = max( map( max, self.njet_bins )) 
         self.min_njet  = min( map( min, self.njet_bins )) 
 
         self.qt_bins = self.correction_data[self.njet_bins[0]].keys()
+        self.qt_bins.sort()
         self.max_qt  = max( map( max, self.qt_bins )) 
         self.min_qt  = min( map( min, self.qt_bins )) 
 
@@ -83,3 +85,4 @@ if __name__=="__main__":
     filename = '/afs/hephy.at/user/r/rschoefbeck/www/StopsDilepton/recoil_v2/2018/lepSel-btag0-relIso0.12-looseLeptonVeto-mll20-onZ/recoil_fitResults_SF.pkl'
 
     recoilCorrector = RecoilCorrector( filename )
+
