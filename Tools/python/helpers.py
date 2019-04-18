@@ -4,7 +4,7 @@
 import os, sys, uuid, subprocess
 import ROOT
 import itertools
-from math                             import pi, sqrt, cosh
+from math                             import pi, sqrt, cosh, cos
 from array                            import array
 
 # Logging
@@ -475,3 +475,9 @@ def deepCheckWeight( file ):
 
     return not isnan(val)
     
+def mTsq( p1, p2 ):
+    return 2 * p1["pt"] * p2["pt"] * ( 1 - cos( deltaPhi( p1["phi"], p2["phi"] ) ) )
+
+def mT( p1, p2 ):
+    return sqrt( mTsq(p1, p2) )
+
