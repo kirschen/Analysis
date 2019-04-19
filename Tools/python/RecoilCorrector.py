@@ -19,12 +19,12 @@ class RecoilCorrector:
         self.filename    = filename
         self.correction_data = pickle.load(file(self.filename))
 
-        self.njet_bins = self.correction_data.keys()
-        self.njet_bins.sort()
-        self.max_njet  = max( map( max, self.njet_bins )) 
-        self.min_njet  = min( map( min, self.njet_bins )) 
+        self.var_bins = self.correction_data.keys()
+        self.var_bins.sort()
+        self.max_var  = max( map( max, self.var_bins )) 
+        self.min_var  = min( map( min, self.var_bins )) 
 
-        self.qt_bins = self.correction_data[self.njet_bins[0]].keys()
+        self.qt_bins = self.correction_data[self.var_bins[0]].keys()
         self.qt_bins.sort()
         self.max_qt  = max( map( max, self.qt_bins )) 
         self.min_qt  = min( map( min, self.qt_bins )) 
@@ -32,28 +32,28 @@ class RecoilCorrector:
         if self.min_qt!=0:
             logger.error( "Minimum qt at %3.2f! Should be 0", self.min_qt )
 
-        self.para_matcher = { nj_bin: {qt_bin: QuantileMatcher(self.correction_data[nj_bin][qt_bin]['para']['mc']['TH1F'], self.correction_data[nj_bin][qt_bin]['para']['data']['TH1F']) for qt_bin in self.qt_bins} for nj_bin in self.njet_bins } 
-        self.perp_matcher = { nj_bin: {qt_bin: QuantileMatcher(self.correction_data[nj_bin][qt_bin]['perp']['mc']['TH1F'], self.correction_data[nj_bin][qt_bin]['perp']['data']['TH1F']) for qt_bin in self.qt_bins} for nj_bin in self.njet_bins } 
+        self.para_matcher = { var_bin: {qt_bin: QuantileMatcher(self.correction_data[var_bin][qt_bin]['para']['mc']['TH1F'], self.correction_data[var_bin][qt_bin]['para']['data']['TH1F']) for qt_bin in self.qt_bins} for var_bin in self.var_bins } 
+        self.perp_matcher = { var_bin: {qt_bin: QuantileMatcher(self.correction_data[var_bin][qt_bin]['perp']['mc']['TH1F'], self.correction_data[var_bin][qt_bin]['perp']['data']['TH1F']) for qt_bin in self.qt_bins} for var_bin in self.var_bins } 
 
-        logger.info( "Constructed para and perp matchers: %i njet bins and %i qt bins", len(self.njet_bins), len(self.qt_bins) )
+        logger.info( "Constructed para and perp matchers: %i var bins and %i qt bins", len(self.var_bins), len(self.qt_bins) )
 
-    def njet_bin( self, njet ):
-        # too low njet: don't return interval
-        if njet<self.min_njet:
-            return None
-        # too high njet: return last interval
-        if njet>=self.max_njet:
-            njet = self.max_njet-1
+    def var_bin( self, var ):
+        # too low var: don't return interval
+        if var<self.min_var:
+            raise ValueError("Value too low.")
+        # too high var: return last interval
+        if var>=self.max_var:
+            var = self.max_var-10**-3
 
         # find interval
-        for iv in self.njet_bins:
-            if njet>=iv[0] and njet<iv[1]:
+        for iv in self.var_bins:
+            if var>=iv[0] and var<iv[1]:
                 return iv
 
     def qt_bin( self, qt ):
         # too low qt: don't return interval
         if qt<self.min_qt:
-            return None
+            raise ValueError("Value too low.")
 
         # too high qt: return last interval
         if qt>=self.max_qt:
@@ -64,19 +64,19 @@ class RecoilCorrector:
             if qt>=iv[0] and qt<iv[1]:
                 return iv
 
-    def predict_para(self, njet, qt, u_para ):
-        njet_bin   = self.njet_bin( njet )
+    def predict_para(self, var, qt, u_para ):
+        var_bin   = self.var_bin( var )
         qt_bin = self.qt_bin( qt )
 
-        if njet_bin and qt_bin:
-            return self.para_matcher[njet_bin][qt_bin].predict( u_para )
+        if var_bin and qt_bin:
+            return self.para_matcher[var_bin][qt_bin].predict( u_para )
 
-    def predict_perp(self, njet, qt, u_perp ):
-        njet_bin   = self.njet_bin( njet )
+    def predict_perp(self, var, qt, u_perp ):
+        var_bin   = self.var_bin( var )
         qt_bin = self.qt_bin( qt )
 
-        if njet_bin and qt_bin:
-            return self.perp_matcher[njet_bin][qt_bin].predict( u_perp )
+        if var_bin and qt_bin:
+            return self.perp_matcher[var_bin][qt_bin].predict( u_perp )
 
 if __name__=="__main__":
     import Analysis.Tools.logger as logger
