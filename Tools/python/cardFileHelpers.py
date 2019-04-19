@@ -219,7 +219,7 @@ def getAllProcesses(cardFile):
                 processDict.update( {bins[i]:processList} )
             if done: return processDict
 
-def scaleCardFile(cardFile, outFile=None, scale=1., scaledProcesses=None, copyUncertainties=True):
+def scaleCardFile(cardFile, outFile=None, scale=1., scaledProcesses=None, copyUncertainties=True, keepObservation=False):
 
     if not outFile:                  outFile  = "out_" + cardFile
     if not cardFile.startswith("/"): cardFile = os.path.join( os.getcwd(), cardFile )
@@ -228,6 +228,8 @@ def scaleCardFile(cardFile, outFile=None, scale=1., scaledProcesses=None, copyUn
     if cardFile == outFile:
         # overwriting
         tmpFile = "/tmp/" + str(uuid.uuid4())
+        if not os.path.isdir( "/tmp/" ):
+            os.makedirs( "/tmp/" )
         shutil.copyfile( cardFile, tmpFile )
         cardFile = tmpFile
         
@@ -266,9 +268,12 @@ def scaleCardFile(cardFile, outFile=None, scale=1., scaledProcesses=None, copyUn
         totYield = 0
         for proc in processes:
             rate = getEstimateFromCard(cardFile, proc, region).val
-            if not scaledProcesses or proc in scaledProcesses: rate *= scale[region]
-            c.specifyExpectation( region, proc, round( rate, 5 ) )
-            totYield += rate
+            if not scaledProcesses or proc in scaledProcesses:
+                newrate = rate * scale[region]
+            else:
+                newrate = rate
+            c.specifyExpectation( region, proc, round( newrate, 5 ) )
+            totYield += rate if keepObservation else newrate
 
         c.addBin( region, bgProcesses, region)
         c.specifyObservation( region, int(round(totYield)) )

@@ -267,7 +267,7 @@ class ResultsDB:
                 time.sleep(0.01)
             except:
                 pass
-            return value
+#            return value
             self.close()
                 
 
