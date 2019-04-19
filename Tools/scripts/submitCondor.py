@@ -34,8 +34,10 @@ parser.add_option("--queue",              dest="queue",              default="ne
 parser.add_option("--discSpace",          dest="discSpace",          default=None,       type=int,             help="Request disc space in MB")
 parser.add_option("--memory",             dest="memory",             default=None,       type=int,             help="Request memory in MB")
 parser.add_option('--dpm',                dest="dpm",                                    action='store_true',  help="Use dpm?")
+parser.add_option('--slc6',               dest="slc6",                                   action='store_true',  help="Use slc6?")
 parser.add_option('--resubmitFailedJobs', dest="resubmitFailedJobs",                     action='store_true',  help="Resubmit Job when exitcode != 0" )
 parser.add_option('--maxRetries',         dest="maxRetries",         default=10,         type=int,             help="Resubmit Job x times. Default is 10" )
+parser.add_option("--workingdir",         dest="workingdir",         default=None,                             help="Working directory for condor jobs, None=condor worker")
 parser.add_option('--dryrun',             dest="dryrun",                                 action='store_true',  help='Run only on a small subset of the data?', )
 parser.add_option('--logLevel',           dest="logLevel",           default="INFO",     choices=logChoices,   help="Log level for logging" )
 
@@ -101,7 +103,7 @@ if __name__ == '__main__':
             os.makedirs(options.output)
 
         # general condor commands
-        rundir = cwd.strip(cmssw)
+        rundir = cwd.split(cmssw+"/")[1]
         condorCommands  = []
         condorCommands += ["universe              = vanilla"]
         condorCommands += ["executable            = %s"%options.execFile]
@@ -118,6 +120,10 @@ if __name__ == '__main__':
         if options.dpm:
             condorCommands += ["x509userproxy         = $ENV(X509_USER_PROXY)"]
             condorCommands += ["use_x509userproxy     = true"]
+        if options.slc6:
+            condorCommands += ['requirements          = (OpSysAndVer =?= "SLCern6")'] # force slc6 machine
+        if options.workingdir:
+            condorCommands += ['initialdir            = %s' %options.workingdir]
 
         for i, command in enumerate(commands):
             # condor commands for each job

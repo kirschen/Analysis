@@ -39,7 +39,7 @@ def photonFromTopDecay( parentList ):
 def getPhotonCategory( g, genparts ):
 
     # safe time if g is no photon or electron
-    if g is None or abs(g['pdgId']) not in [11,22]: return 3
+    if not g or abs(g['pdgId']) not in [11,22]: return 3
 
     isIsolated = isIsolatedPhoton( g, genparts, coneSize=0.2, ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] )
     hasMeson   = hasMesonMother( getParentIds( g, genparts ) )
@@ -47,4 +47,4 @@ def getPhotonCategory( g, genparts ):
     if abs(g['pdgId']) == 22 and isIsolated and not hasMeson: return 0        # type 0: genuine photon:   isolated photon with no meson in parent list
     if abs(g['pdgId']) == 22 and isIsolated and hasMeson:     return 1        # type 1: hadronic photon:  isolated photon with meson in parent list
     if abs(g['pdgId']) == 11 and isIsolated and not hasMeson: return 2        # type 2: miss-Id electron: electron with deltaR and meson-mother requirement from genuine photon
-    return 3                                                                        # type 3: hadronic fake:    none of the above ( e.g. non-isolated )
+    return 3                                                                  # type 3: hadronic fake:    none of the above ( e.g. non-isolated )

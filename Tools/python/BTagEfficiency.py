@@ -33,8 +33,12 @@ effFile2016CSVv2   = 'TTLep_pow_2016_2j_2l_CSVv2_eta.pkl'
 effFile2017CSVv2   = 'TTLep_pow_2017_2j_2l_CSVv2_eta.pkl'
 effFile2018CSVv2   = 'TTLep_pow_2018_2j_2l_CSVv2_eta.pkl'
 
-# Not working with FastSim for now
-sfFile_FastSim     = 'fastsim_csvv2_ttbar_26_1_2017.csv'
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation2016Legacy
+sfFile2016DeepCSV_FastSim   = 'deepcsv_13TEV_16SL_18_3_2019.csv'
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation94X
+sfFile2017DeepCSV_FastSim   = 'deepcsv_13TEV_17SL_18_3_2019.csv'
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation102X
+sfFile2018DeepCSV_FastSim   = 'deepcsv_13TEV_1718SLSame_18_3_2019ExUnc.csv'
 
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation2016Legacy
 sfFile2016DeepCSV  = 'b2016_DeepCSV_2016LegacySF_V1.csv' #Moriond2019
@@ -45,7 +49,12 @@ sfFile2018DeepCSV  = 'b2018_DeepCSV_102XSF_V1.csv' #Moriond2019
 
 sfFile2016CSVv2    = 'b2016_CSVv2_Moriond17_B_H.csv'
 sfFile2017CSVv2    = 'b2017_CSVv2_94XSF_V2_B_F.csv'
-sfFile2018CSVv2    = 'b2017_CSVv2_94XSF_V2_B_F.csv' #still 2017
+sfFile2018CSVv2    = 'b2017_CSVv2_94XSF_V2_B_F.csv' #still 2017. there won't be SFs for CSVv2 in 2018, discontinued.
+
+## just one CSVv2 SF file for fast sim. please do not use it.
+sfFile2016CSVv2_FastSim = 'csvv2_13TEV_17SL_18_3_2019.csv'
+sfFile2017CSVv2_FastSim = 'csvv2_13TEV_17SL_18_3_2019.csv'
+sfFile2018CSVv2_FastSim = 'csvv2_13TEV_17SL_18_3_2019.csv'
 
 class BTagEfficiency:
 
@@ -109,33 +118,33 @@ class BTagEfficiency:
             self.etaBins = etaBins2016
             if tagger == 'CSVv2':
                 self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2016CSVv2 ) )
-                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile_FastSim ) )
+                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile2016CSVv2_FastSim ) )
                 self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2016CSVv2 ) )
             elif tagger == 'DeepCSV':
                 self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2016DeepCSV ) )
-                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile_FastSim ) )
+                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile2016DeepCSV_FastSim ) )
                 self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2016DeepCSV ) )
 
         if year == 2017:
             self.etaBins = etaBins2017
             if tagger == 'CSVv2':
                 self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2017CSVv2 ) )
-                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile_FastSim ) )
+                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile2017CSVv2_FastSim ) )
                 self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2017CSVv2 ) )
             elif tagger == 'DeepCSV':
                 self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2017DeepCSV ) )
-                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile_FastSim ) )
+                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile2017DeepCSV_FastSim ) )
                 self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2017DeepCSV ) )
 
         if year == 2018:
             self.etaBins = etaBins2018
             if tagger == 'CSVv2':
                 self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2018CSVv2 ) )
-                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile_FastSim ) )
+                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile2018CSVv2_FastSim ) )
                 self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2018CSVv2 ) )
             elif tagger == 'DeepCSV':
                 self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2018DeepCSV ) )
-                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile_FastSim ) )
+                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile2018DeepCSV_FastSim ) )
                 self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2018DeepCSV ) )
 
         logger.info ( "Loading scale factors from %s", self.scaleFactorFile )

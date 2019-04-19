@@ -144,20 +144,20 @@ class HyperPoly:
     
     def chi2_ndof( self, coefficients, weights):
         return self.chi2( coefficients, weights )/float(self.ndof)
-         
+
+    min_abs_float = 1e-10
     def root_func_string(self, coefficients):
-        min_abs_float = 1e-10
         substrings = []
         for n in range(self.ndof):
-            if abs(coefficients[n])>min_abs_float:
+            if abs(coefficients[n])>self.min_abs_float:
                 sub_substring = []
-                if abs(1-coefficients[n])>min_abs_float:
+                if abs(1-coefficients[n])>self.min_abs_float:
                     sub_substring.append( ('%f'%coefficients[n]).rstrip('0') )
                 for var in range(self.nvar):
                     power = self.combination[n].count( var )
                     if power>0:
 #                        sub_substring.append( "x%i" % (var) if power==1 else "x%i**%i" % (var, power)  )
-                        if abs(self.ref_point[var])>min_abs_float:
+                        if abs(self.ref_point[var])>self.min_abs_float:
                             sub_substring.append( "(x%i-%f)" % (var, self.ref_point[var]) if power==1 else "(x%i-%f)**%i" % (var, self.ref_point[var], power)  )
                         else:
                             sub_substring.append( "x%i" % (var) if power==1 else "x%i**%i" % (var, power)  )
