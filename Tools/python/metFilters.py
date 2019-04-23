@@ -1,9 +1,10 @@
 # MetFilter Analysis Recommendations according to https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
 
-def getFilterCut( year, isData=False, ignoreJSON=False ):
+def getFilterCut( year, isData=False, ignoreJSON=False, isFastSim=False ):
     if year == 2016:
         filters             = [ "Flag_goodVertices" ]                         # primary vertex filter
-        filters            += [ "Flag_globalSuperTightHalo2016Filter" ]       # beam halo filter
+        if not isFastSim:
+            filters            += [ "Flag_globalSuperTightHalo2016Filter" ]       # beam halo filter
         filters            += [ "Flag_HBHENoiseFilter" ]                      # HBHE noise filter
         filters            += [ "Flag_HBHENoiseIsoFilter" ]                   # HBHEiso noise filter
         filters            += [ "Flag_EcalDeadCellTriggerPrimitiveFilter" ]   # ECAL TP filter
@@ -14,7 +15,8 @@ def getFilterCut( year, isData=False, ignoreJSON=False ):
 
     elif year == 2017:
         filters             = [ "Flag_goodVertices" ]                         # primary vertex filter
-        filters            += [ "Flag_globalSuperTightHalo2016Filter" ]       # beam halo filter
+        if not isFastSim:
+            filters            += [ "Flag_globalSuperTightHalo2016Filter" ]       # beam halo filter
         filters            += [ "Flag_HBHENoiseFilter" ]                      # HBHE noise filter
         filters            += [ "Flag_HBHENoiseIsoFilter" ]                   # HBHEiso noise filter
         filters            += [ "Flag_EcalDeadCellTriggerPrimitiveFilter" ]   # ECAL TP filter
@@ -27,7 +29,8 @@ def getFilterCut( year, isData=False, ignoreJSON=False ):
 
     elif year == 2018:
         filters             = [ "Flag_goodVertices" ]                         # primary vertex filter
-        filters            += [ "Flag_globalSuperTightHalo2016Filter" ]       # beam halo filter
+        if not isFastSim:
+            filters            += [ "Flag_globalSuperTightHalo2016Filter" ]       # beam halo filter
         filters            += [ "Flag_HBHENoiseFilter" ]                      # HBHE noise filter
         filters            += [ "Flag_HBHENoiseIsoFilter" ]                   # HBHEiso noise filter
         filters            += [ "Flag_EcalDeadCellTriggerPrimitiveFilter" ]   # ECAL TP filter
