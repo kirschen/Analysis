@@ -22,4 +22,4 @@ pileupCalc.py -i $JSON --inputLumiJSON $PILEUP_LATEST --calcMode true --minBiasX
 echo "Calculating PU 2017 XSecVUp"
 pileupCalc.py -i $JSON --inputLumiJSON $PILEUP_LATEST --calcMode true --minBiasXsec 76120 --maxPileupBin 100 --numPileupBins 100 PU_2017_${LUMI}_XSecVUp.root
 echo "Calculating PU 2017 XSecVVUp"
-pileupCalc.py -i $JSON --inputLumiJSON $PILEUP_LATEST --calcMode true --minBiasXsec 79580 --maxPileupBin 100 --numPileupBins 100 PU_2017_${LUMI}_XSecVUp.root
+pileupCalc.py -i $JSON --inputLumiJSON $PILEUP_LATEST --calcMode true --minBiasXsec 79580 --maxPileupBin 100 --numPileupBins 100 PU_2017_${LUMI}_XSecVVUp.root
