@@ -102,11 +102,12 @@ if __name__ == '__main__':
             os.makedirs(options.output)
 
         # general condor commands
-        rundir = cwd.strip(cmssw)
+        rundir = cwd.split(cmssw+"/")[1]
         condorCommands  = []
         condorCommands += ["universe              = vanilla"]
         condorCommands += ["executable            = %s"%options.execFile]
         condorCommands += ['+JobFlavour           = "%s"'%options.queue]
+        condorCommands += ['environment           = "IWD=%s"' %cwd]
         if options.discSpace:
             condorCommands += ["request_disk          = %i"%(options.discSpace*1000)] # disc space in kB (MB*1000)
         if options.memory:
