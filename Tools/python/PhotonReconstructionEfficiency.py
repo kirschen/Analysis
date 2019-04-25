@@ -7,6 +7,7 @@ from Analysis.Tools.helpers import getObjFromFile
 import logging
 logger = logging.getLogger(__name__)
 
+# DO NOT USE THAT ANYMORE
 class PhotonReconstructionEfficiency:
     def __init__(self, year=2016):
 

@@ -54,3 +54,72 @@ class PhotonSF:
 
         return val + sigma*valErr
 
+if __name__ == "__main__":
+
+    sigma = 1
+    print "2016"
+    LSF = PhotonSF(year=2016)
+    print LSF.getSF(20, 1, sigma=sigma)
+    print LSF.getSF(20, -1, sigma=sigma)
+    print LSF.getSF(20, 1, sigma=sigma)
+    print LSF.getSF(20, -1, sigma=sigma)
+
+    print LSF.getSF(200, 1, sigma=sigma)
+    print LSF.getSF(200, -1, sigma=sigma)
+    print LSF.getSF(200, 1, sigma=sigma)
+    print LSF.getSF(200, -1, sigma=sigma)
+
+    print LSF.getSF(20, 2.5, sigma=sigma)
+    print LSF.getSF(20, -2.5, sigma=sigma)
+    print LSF.getSF(20, 2.5, sigma=sigma)
+    print LSF.getSF(20, -2.5, sigma=sigma)
+
+    print LSF.getSF(200, 2.5, sigma=sigma)
+    print LSF.getSF(200, -2.5, sigma=sigma)
+    print LSF.getSF(200, 2.5, sigma=sigma)
+    print LSF.getSF(200, -2.5, sigma=sigma)
+
+    print "2017"
+    LSF = PhotonSF(year=2017)
+    print LSF.getSF(20, 1, sigma=sigma)
+    print LSF.getSF(20, -1, sigma=sigma)
+    print LSF.getSF(20, 1, sigma=sigma)
+    print LSF.getSF(20, -1, sigma=sigma)
+
+    print LSF.getSF(200, 1, sigma=sigma)
+    print LSF.getSF(200, -1, sigma=sigma)
+    print LSF.getSF(200, 1, sigma=sigma)
+    print LSF.getSF(200, -1, sigma=sigma)
+
+    print LSF.getSF(20, 2.5, sigma=sigma)
+    print LSF.getSF(20, -2.5, sigma=sigma)
+    print LSF.getSF(20, 2.5, sigma=sigma)
+    print LSF.getSF(20, -2.5, sigma=sigma)
+
+    print LSF.getSF(200, 2.5, sigma=sigma)
+    print LSF.getSF(200, -2.5, sigma=sigma)
+    print LSF.getSF(200, 2.5, sigma=sigma)
+    print LSF.getSF(200, -2.5, sigma=sigma)
+
+    print "2018"
+    LSF = PhotonSF(year=2018)
+    print LSF.getSF(20, 1, sigma=sigma)
+    print LSF.getSF(20, -1, sigma=sigma)
+    print LSF.getSF(20, 1, sigma=sigma)
+    print LSF.getSF(20, -1, sigma=sigma)
+
+    print LSF.getSF(200, 1, sigma=sigma)
+    print LSF.getSF(200, -1, sigma=sigma)
+    print LSF.getSF(200, 1, sigma=sigma)
+    print LSF.getSF(200, -1, sigma=sigma)
+
+    print LSF.getSF(20, 2.5, sigma=sigma)
+    print LSF.getSF(20, -2.5, sigma=sigma)
+    print LSF.getSF(20, 2.5, sigma=sigma)
+    print LSF.getSF(20, -2.5, sigma=sigma)
+
+    print LSF.getSF(200, 2.5, sigma=sigma)
+    print LSF.getSF(200, -2.5, sigma=sigma)
+    print LSF.getSF(200, 2.5, sigma=sigma)
+    print LSF.getSF(200, -2.5, sigma=sigma)
+
