@@ -25,6 +25,7 @@ from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties   
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetRecalib            import jetRecalib
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.METSigProducer        import METSigProducer 
 from PhysicsTools.NanoAODTools.postprocessing.modules.private.METminProducer    import METminProducer
+from PhysicsTools.NanoAODTools.postprocessing.modules.private.ISRcounter        import ISRcounter
 
 # Logger
 import logging
@@ -118,6 +119,7 @@ class MetSignificance:
         self.modules = []
     
         if not self.isData:
+            self.modules.append( ISRcounter() )
             self.modules.append( jetmetUncertaintiesProducer(str(year), JEC, [ "Total" ], jer=JERera, jetType = "AK4PFchs", redoJEC=True, METBranchName='MET') )
             if year == 2017:
                 self.modules.append( jetmetUncertaintiesProducer(str(year), JEC, [ "Total" ], jer=JERera, jetType = "AK4PFchs", redoJEC=True, METBranchName='METFixEE2017') )
