@@ -31,6 +31,9 @@ from PhysicsTools.NanoAODTools.postprocessing.modules.private.ISRcounter        
 import logging
 logger = logging.getLogger(__name__)
 
+def extractEra(sampleName):
+    return sampleName[sampleName.find("Run"):sampleName.find("Run")+len('Run2000A')]
+
 class MetSignificance:
 
     def __init__( self, sample, year, output_directory, fastSim=False ):
@@ -101,6 +104,7 @@ class MetSignificance:
             JERera              = "Autumn18_V1"
             if self.isData:
                 if self.name.count("Run2018"):
+                    era         = extractEra(self.name)[-1]
                     JEC         = "Autumn18_Run%s_V8_DATA"%era
                 else:
                     raise NotImplementedError ("Don't know what JECs to use for sample %s"%self.name)
