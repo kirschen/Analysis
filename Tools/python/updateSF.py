@@ -3,8 +3,10 @@ import os
 commands = []
 
 #Leptons
-leptonSF_datapath = os.path.expandvars("$CMSSW_BASE/src/Analysis/Tools/data/leptonSFData/")
-photonSF_datapath = os.path.expandvars("$CMSSW_BASE/src/Analysis/Tools/data/photonSFData/")
+#leptonSF_datapath = os.path.expandvars("$CMSSW_BASE/src/Analysis/Tools/data/leptonSFData/")
+#photonSF_datapath = os.path.expandvars("$CMSSW_BASE/src/Analysis/Tools/data/photonSFData/")
+leptonSF_datapath = os.path.expandvars("$PWD/../data/leptonSFData/")
+photonSF_datapath = os.path.expandvars("$PWD/../data/photonSFData/")
 
 #Muons 2016
 muonID_16_BCDEF_git  = "https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2016_legacy_rereco/systematic/RunBCDEF_SF_ID.root"
