@@ -9,19 +9,19 @@ leptonSF_datapath = os.path.expandvars("$PWD/../data/leptonSFData/")
 photonSF_datapath = os.path.expandvars("$PWD/../data/photonSFData/")
 
 #Muons 2016
-muonID_16_BCDEF_git  = "https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2016_legacy_rereco/systematic/RunBCDEF_SF_ID.root"
+muonID_16_BCDEF_git  = "https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/raw/master/EfficienciesStudies/2016_legacy_rereco/systematic/RunBCDEF_SF_ID.root"
 muonID_16_BCDEF_file = os.path.join( leptonSF_datapath, "muon2016_RunBCDEF_SF_ID.root" )
 commands.append( "wget -c %s -O %s"%(muonID_16_BCDEF_git, muonID_16_BCDEF_file) )
 
-muonISO_16_BCDEF_git  = "https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2016_legacy_rereco/systematic/RunBCDEF_SF_ISO.root"
+muonISO_16_BCDEF_git  = "https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/raw/master/EfficienciesStudies/2016_legacy_rereco/systematic/RunBCDEF_SF_ISO.root"
 muonISO_16_BCDEF_file = os.path.join( leptonSF_datapath, "muon2016_RunBCDEF_SF_ISO.root" )
 commands.append( "wget -c %s -O %s"%(muonISO_16_BCDEF_git, muonISO_16_BCDEF_file) )
 
-muonID_16_GH_git  = "https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2016_legacy_rereco/systematic/RunGH_SF_ID.root"
+muonID_16_GH_git  = "https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/raw/master/EfficienciesStudies/2016_legacy_rereco/systematic/RunGH_SF_ID.root"
 muonID_16_GH_file = os.path.join( leptonSF_datapath, "muon2016_RunGH_SF_ID.root" )
 commands.append( "wget -c %s -O %s"%(muonID_16_GH_git, muonID_16_GH_file) )
 
-muonISO_16_GH_git  = "https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2016_legacy_rereco/systematic/RunGH_SF_ISO.root"
+muonISO_16_GH_git  = "https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/raw/master/EfficienciesStudies/2016_legacy_rereco/systematic/RunGH_SF_ISO.root"
 muonISO_16_GH_file = os.path.join( leptonSF_datapath, "muon2016_RunGH_SF_ISO.root" )
 commands.append( "wget -c %s -O %s"%(muonISO_16_GH_git, muonISO_16_GH_file) )
 
@@ -35,11 +35,11 @@ muonISO_17_BCDEF_file = os.path.join( leptonSF_datapath, "muon2017_RunBCDEF_SF_I
 commands.append( "wget -c %s -O %s"%(muonISO_17_BCDEF_git, muonISO_17_BCDEF_file) )
 
 #Muons 2018
-muonID_18_ABCD_git  = "https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2018/rootfiles/RunABCD_SF_ID.root"
+muonID_18_ABCD_git  = "https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/raw/master/EfficienciesStudies/2018/rootfiles/RunABCD_SF_ID.root"
 muonID_18_ABCD_file = os.path.join( leptonSF_datapath, "mu2018_RunABCD_SF_ID.root" )
 commands.append( "wget -c %s -O %s"%(muonID_18_ABCD_git, muonID_18_ABCD_file) )
 
-muonISO_18_ABCD_git  = "https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2018/rootfiles/RunABCD_SF_ISO.root"
+muonISO_18_ABCD_git  = "https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/raw/master/EfficienciesStudies/2018/rootfiles/RunABCD_SF_ISO.root"
 muonISO_18_ABCD_file = os.path.join( leptonSF_datapath, "mu2018_RunABCD_SF_ISO.root" )
 commands.append( "wget -c %s -O %s"%(muonISO_18_ABCD_git, muonISO_18_ABCD_file) )
 
