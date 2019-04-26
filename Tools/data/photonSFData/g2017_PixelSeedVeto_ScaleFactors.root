@@ -49,7 +49,7 @@
 
 
 <body id="ctl00_ctl00_NICEMasterPageBody">
-  <form name="aspnetForm" method="post" action="/adfs/ls/?wa=wsignin1.0&amp;wreply=https%3A%2F%2Ftwiki.cern.ch%2FShibboleth.sso%2FADFS&amp;wct=2019-04-26T12%3A32%3A11Z&amp;wtrealm=https%3A%2F%2Ftwiki.cern.ch%2FShibboleth.sso%2FADFS&amp;wctx=cookie%3A1556281931_d73a" id="aspnetForm">
+  <form name="aspnetForm" method="post" action="/adfs/ls/?wa=wsignin1.0&amp;wreply=https%3A%2F%2Ftwiki.cern.ch%2FShibboleth.sso%2FADFS&amp;wct=2019-04-26T12%3A39%3A41Z&amp;wtrealm=https%3A%2F%2Ftwiki.cern.ch%2FShibboleth.sso%2FADFS&amp;wctx=cookie%3A1556282381_cd3f" id="aspnetForm">
 <input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUKLTcwMDIwMTIzOA8WAh4TVmFsaWRhdGVSZXF1ZXN0TW9kZQIBZBgBBR5fX0NvbnRyb2xzUmVxdWlyZVBvc3RCYWNrS2V5X18WAQVNY3RsMDAkY3RsMDAkTklDRU1hc3RlclBhZ2VCb2R5Q29udGVudCRTaXRlQ29udGVudFBsYWNlaG9sZGVyJGNoa1JlbWVtYmVyTG9naW55zGggmjUO9MyY8SuFAsq3+JmijA==" />
 
 <input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="0EE29E36" /><input type="hidden" name="__db" value="14" />
@@ -195,7 +195,7 @@ avril afin d’augmenter le nombre d’adresses IP.&#160;</span>
                 <td rowspan="2" class="fedicon">
                   <img src="/adfs/ls/images/federation/ieff2.png" alt="Kerberos based authentication" /></td>
                 <td class="fedtitle">
-                  <a id="ctl00_ctl00_NICEMasterPageBodyContent_SiteContentPlaceholder_hlNTLM2" href="auth/integrated/?wa=wsignin1.0&amp;wreply=https%3A%2F%2Ftwiki.cern.ch%2FShibboleth.sso%2FADFS&amp;wct=2019-04-26T12%3A32%3A11Z&amp;wtrealm=https%3A%2F%2Ftwiki.cern.ch%2FShibboleth.sso%2FADFS&amp;wctx=cookie%3A1556281931_d73a">Sign in using your current Windows/Kerberos credentials</a>
+                  <a id="ctl00_ctl00_NICEMasterPageBodyContent_SiteContentPlaceholder_hlNTLM2" href="auth/integrated/?wa=wsignin1.0&amp;wreply=https%3A%2F%2Ftwiki.cern.ch%2FShibboleth.sso%2FADFS&amp;wct=2019-04-26T12%3A39%3A41Z&amp;wtrealm=https%3A%2F%2Ftwiki.cern.ch%2FShibboleth.sso%2FADFS&amp;wctx=cookie%3A1556282381_cd3f">Sign in using your current Windows/Kerberos credentials</a>
                   <a id="ctl00_ctl00_NICEMasterPageBodyContent_SiteContentPlaceholder_hlNTLMAutologon" title="Enables Autologon with current Windows/Kerberos Credentials. Click Logout in the Application to disable." href="javascript:__doPostBack(&#39;ctl00$ctl00$NICEMasterPageBodyContent$SiteContentPlaceholder$hlNTLMAutologon&#39;,&#39;&#39;)">[autologon]</a>
                 </td>
               </tr>
@@ -216,7 +216,7 @@ avril afin d’augmenter le nombre d’adresses IP.&#160;</span>
                 <td rowspan="2" class="fedicon">
                   <img src="/adfs/ls/images/federation/eugridpma.png" border="0" alt="Certificate authentication" /></td>
                 <td class="fedtitle">
-                  <a id="ctl00_ctl00_NICEMasterPageBodyContent_SiteContentPlaceholder_hlCertificateAuth" title="Don&#39;t forget to first map your Certificate to your CERN Account on http://ca.cern.ch ." href="auth/sslclient/?wa=wsignin1.0&amp;wreply=https%3A%2F%2Ftwiki.cern.ch%2FShibboleth.sso%2FADFS&amp;wct=2019-04-26T12%3A32%3A11Z&amp;wtrealm=https%3A%2F%2Ftwiki.cern.ch%2FShibboleth.sso%2FADFS&amp;wctx=cookie%3A1556281931_d73a">Sign in using your Certificate</a>
+                  <a id="ctl00_ctl00_NICEMasterPageBodyContent_SiteContentPlaceholder_hlCertificateAuth" title="Don&#39;t forget to first map your Certificate to your CERN Account on http://ca.cern.ch ." href="auth/sslclient/?wa=wsignin1.0&amp;wreply=https%3A%2F%2Ftwiki.cern.ch%2FShibboleth.sso%2FADFS&amp;wct=2019-04-26T12%3A39%3A41Z&amp;wtrealm=https%3A%2F%2Ftwiki.cern.ch%2FShibboleth.sso%2FADFS&amp;wctx=cookie%3A1556282381_cd3f">Sign in using your Certificate</a>
                   <a onclick="javascript:return confirm(&#39;Warning: please ensure you successfully authenticated with your Certificate by clicking on \&#39;Sign in using your Certificate\&#39; before enabling autologon.\r\nIf autologon is enabled with a bad Certificate your will have to Clear your Browser\&#39;s cookies to disable the feature.\r\nClick Ok to proceed with autologon enabling or Cancel if you are unsure or don\&#39;t understand this message.&#39;);" id="ctl00_ctl00_NICEMasterPageBodyContent_SiteContentPlaceholder_hlCertificateAutologon" title="Enables Autologon with Certificate. Click Logout in the Application to disable. Don&#39;t forget to first map your Certificate to your CERN Account on http://ca.cern.ch ." href="javascript:__doPostBack(&#39;ctl00$ctl00$NICEMasterPageBodyContent$SiteContentPlaceholder$hlCertificateAutologon&#39;,&#39;&#39;)">[autologon]</a>
                 </td>
               </tr>
