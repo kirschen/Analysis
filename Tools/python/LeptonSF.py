@@ -36,9 +36,9 @@ keys_ele2017      = { "medium":[( "e2017_ElectronMediumCutBased.root", "EGamma_S
                       "tight": [( "e2017_ElectronTight.root", "EGamma_SF2D" )]
                     }
 
-keys_mu2018       = { "medium":[( "mu2018_RunABCD_SF_ID.root",  "NUM_MediumID_DEN_genTracks_pt_abseta"   ),
+keys_mu2018       = { "medium":[( "mu2018_RunABCD_SF_ID.root",  "NUM_MediumPromptID_DEN_TrackerMuons_pt_abseta"   ),
                                 ( "mu2018_RunABCD_SF_ISO.root", "NUM_TightRelIso_DEN_MediumID_pt_abseta" )],
-                      "tight": [( "mu2018_RunABCD_SF_ID.root",  "NUM_TightID_DEN_genTracks_pt_abseta"   ),
+                      "tight": [( "mu2018_RunABCD_SF_ID.root",  "NUM_TightID_DEN_TrackerMuons_pt_abseta"   ),
                                 ( "mu2018_RunABCD_SF_ISO.root", "NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta" )]
                     }
 
