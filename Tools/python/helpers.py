@@ -481,3 +481,13 @@ def mTsq( p1, p2 ):
 def mT( p1, p2 ):
     return sqrt( mTsq(p1, p2) )
 
+def nonEmptyFile( f, treeName='Events' ):
+    rf = ROOT.TFile.Open(f)
+    if not rf: return False
+    tree = getattr( rf, treeName )
+    nonEmpty = bool( tree.GetEntries() )
+    rf.Close()
+    return nonEmpty
+
+
+

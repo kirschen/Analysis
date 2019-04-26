@@ -65,7 +65,7 @@ class LeptonTrackingEfficiency:
             if   pt >= self.e_ptMax:       pt = self.e_ptMax - 1 
             elif pt <  self.e_ptMin_lowEt: pt = self.e_ptMin_lowEt + 1
 
-            if pt <= self.e_ptMin: sf_hist = self.e_sf_lowEt
+            if pt < self.e_ptMin: sf_hist = self.e_sf_lowEt
             else:                  sf_hist = self.e_sf
 
             val    = sf_hist.GetBinContent( sf_hist.FindBin(eta, pt) )
@@ -78,4 +78,75 @@ class LeptonTrackingEfficiency:
 
         else:
             raise ValueError( "Lepton pdgId %i neither electron or muon"%pdgId )
+
+
+
+if __name__ == "__main__":
+
+    sigma = 0
+    print "2016"
+    LSF = LeptonTrackingEfficiency(year=2016)
+    print LSF.getSF(11, 20, 1, sigma=sigma)
+    print LSF.getSF(11, 20, -1, sigma=sigma)
+    print LSF.getSF(13, 20, 1, sigma=sigma)
+    print LSF.getSF(13, 20, -1, sigma=sigma)
+
+    print LSF.getSF(11, 200, 1, sigma=sigma)
+    print LSF.getSF(11, 200, -1, sigma=sigma)
+    print LSF.getSF(13, 200, 1, sigma=sigma)
+    print LSF.getSF(13, 200, -1, sigma=sigma)
+
+    print LSF.getSF(11, 20, 2.5, sigma=sigma)
+    print LSF.getSF(11, 20, -2.5, sigma=sigma)
+    print LSF.getSF(13, 20, 2.5, sigma=sigma)
+    print LSF.getSF(13, 20, -2.5, sigma=sigma)
+
+    print LSF.getSF(11, 200, 2.5, sigma=sigma)
+    print LSF.getSF(11, 200, -2.5, sigma=sigma)
+    print LSF.getSF(13, 200, 2.5, sigma=sigma)
+    print LSF.getSF(13, 200, -2.5, sigma=sigma)
+
+    print "2017"
+    LSF = LeptonTrackingEfficiency(year=2017)
+    print LSF.getSF(11, 20, 1, sigma=sigma)
+    print LSF.getSF(11, 20, -1, sigma=sigma)
+    print LSF.getSF(13, 20, 1, sigma=sigma)
+    print LSF.getSF(13, 20, -1, sigma=sigma)
+
+    print LSF.getSF(11, 200, 1, sigma=sigma)
+    print LSF.getSF(11, 200, -1, sigma=sigma)
+    print LSF.getSF(13, 200, 1, sigma=sigma)
+    print LSF.getSF(13, 200, -1, sigma=sigma)
+
+    print LSF.getSF(11, 20, 2.5, sigma=sigma)
+    print LSF.getSF(11, 20, -2.5, sigma=sigma)
+    print LSF.getSF(13, 20, 2.5, sigma=sigma)
+    print LSF.getSF(13, 20, -2.5, sigma=sigma)
+
+    print LSF.getSF(11, 200, 2.5, sigma=sigma)
+    print LSF.getSF(11, 200, -2.5, sigma=sigma)
+    print LSF.getSF(13, 200, 2.5, sigma=sigma)
+    print LSF.getSF(13, 200, -2.5, sigma=sigma)
+
+    print "2018"
+    LSF = LeptonTrackingEfficiency(year=2018)
+    print LSF.getSF(11, 20, 1, sigma=sigma)
+    print LSF.getSF(11, 20, -1, sigma=sigma)
+    print LSF.getSF(13, 20, 1, sigma=sigma)
+    print LSF.getSF(13, 20, -1, sigma=sigma)
+
+    print LSF.getSF(11, 200, 1, sigma=sigma)
+    print LSF.getSF(11, 200, -1, sigma=sigma)
+    print LSF.getSF(13, 200, 1, sigma=sigma)
+    print LSF.getSF(13, 200, -1, sigma=sigma)
+
+    print LSF.getSF(11, 20, 2.5, sigma=sigma)
+    print LSF.getSF(11, 20, -2.5, sigma=sigma)
+    print LSF.getSF(13, 20, 2.5, sigma=sigma)
+    print LSF.getSF(13, 20, -2.5, sigma=sigma)
+
+    print LSF.getSF(11, 200, 2.5, sigma=sigma)
+    print LSF.getSF(11, 200, -2.5, sigma=sigma)
+    print LSF.getSF(13, 200, 2.5, sigma=sigma)
+    print LSF.getSF(13, 200, -2.5, sigma=sigma)
 

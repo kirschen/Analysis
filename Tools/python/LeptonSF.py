@@ -1,5 +1,6 @@
 import ROOT
 import os
+from math import sqrt
 
 from Analysis.Tools.helpers import getObjFromFile
 from Analysis.Tools.u_float import u_float
@@ -123,10 +124,11 @@ class LeptonSF:
             if   eta >=  2.4: eta =  2.39 
             elif eta <= -2.4: eta = -2.39 
 
-            sf_BCDEF = self.mult( [self.getPartialSF(effMap, pt, eta) for effMap in self.mu_BCDEF] ).val
-            sf_GH    = self.mult( [self.getPartialSF(effMap, pt, eta) for effMap in self.mu_GH] ).val
-            sf       = (sf_BCDEF*lumiRatio2016_BCDEF) + (sf_GH*lumiRatio2016_GH) # Scale SF by lumiRatio
-            sigma    = 0.03 # Recommendation for Moriond17
+            sf_BCDEF = self.mult( [self.getPartialSF(effMap, pt, eta) for effMap in self.mu_BCDEF] )
+            sf_GH    = self.mult( [self.getPartialSF(effMap, pt, eta) for effMap in self.mu_GH] )
+            sf       = (sf_BCDEF.val*lumiRatio2016_BCDEF) + (sf_GH.val*lumiRatio2016_GH) # Scale SF by lumiRatio
+            sigma    = sqrt( (sf_BCDEF.sigma*lumiRatio2016_BCDEF)**2 + (sf_GH.sigma*lumiRatio2016_GH)**2 ) # Scale SF by lumiRatio
+#            sigma    = 0.03 # Recommendation for Moriond17
             sf       = u_float(sf, sigma)
 
         else:
@@ -151,134 +153,135 @@ class LeptonSF:
 
 if __name__ == "__main__":
 
+    sigma = 0
     print "2016, medium"
     LSF = LeptonSF(year=2016, ID="medium")
-    print LSF.getSF(11, 20, 1)
-    print LSF.getSF(11, 20, -1)
-    print LSF.getSF(13, 20, 1)
-    print LSF.getSF(13, 20, -1)
+    print LSF.getSF(11, 20, 1, sigma=sigma)
+    print LSF.getSF(11, 20, -1, sigma=sigma)
+    print LSF.getSF(13, 20, 1, sigma=sigma)
+    print LSF.getSF(13, 20, -1, sigma=sigma)
 
-    print LSF.getSF(11, 200, 1)
-    print LSF.getSF(11, 200, -1)
-    print LSF.getSF(13, 200, 1)
-    print LSF.getSF(13, 200, -1)
+    print LSF.getSF(11, 200, 1, sigma=sigma)
+    print LSF.getSF(11, 200, -1, sigma=sigma)
+    print LSF.getSF(13, 200, 1, sigma=sigma)
+    print LSF.getSF(13, 200, -1, sigma=sigma)
 
-    print LSF.getSF(11, 20, 2.5)
-    print LSF.getSF(11, 20, -2.5)
-    print LSF.getSF(13, 20, 2.5)
-    print LSF.getSF(13, 20, -2.5)
+    print LSF.getSF(11, 20, 2.5, sigma=sigma)
+    print LSF.getSF(11, 20, -2.5, sigma=sigma)
+    print LSF.getSF(13, 20, 2.5, sigma=sigma)
+    print LSF.getSF(13, 20, -2.5, sigma=sigma)
 
-    print LSF.getSF(11, 200, 2.5)
-    print LSF.getSF(11, 200, -2.5)
-    print LSF.getSF(13, 200, 2.5)
-    print LSF.getSF(13, 200, -2.5)
+    print LSF.getSF(11, 200, 2.5, sigma=sigma)
+    print LSF.getSF(11, 200, -2.5, sigma=sigma)
+    print LSF.getSF(13, 200, 2.5, sigma=sigma)
+    print LSF.getSF(13, 200, -2.5, sigma=sigma)
 
     print "2016, tight"
     LSF = LeptonSF(year=2016, ID="tight")
-    print LSF.getSF(11, 20, 1)
-    print LSF.getSF(11, 20, -1)
-    print LSF.getSF(13, 20, 1)
-    print LSF.getSF(13, 20, -1)
+    print LSF.getSF(11, 20, 1, sigma=sigma)
+    print LSF.getSF(11, 20, -1, sigma=sigma)
+    print LSF.getSF(13, 20, 1, sigma=sigma)
+    print LSF.getSF(13, 20, -1, sigma=sigma)
 
-    print LSF.getSF(11, 200, 1)
-    print LSF.getSF(11, 200, -1)
-    print LSF.getSF(13, 200, 1)
-    print LSF.getSF(13, 200, -1)
+    print LSF.getSF(11, 200, 1, sigma=sigma)
+    print LSF.getSF(11, 200, -1, sigma=sigma)
+    print LSF.getSF(13, 200, 1, sigma=sigma)
+    print LSF.getSF(13, 200, -1, sigma=sigma)
 
-    print LSF.getSF(11, 20, 2.5)
-    print LSF.getSF(11, 20, -2.5)
-    print LSF.getSF(13, 20, 2.5)
-    print LSF.getSF(13, 20, -2.5)
+    print LSF.getSF(11, 20, 2.5, sigma=sigma)
+    print LSF.getSF(11, 20, -2.5, sigma=sigma)
+    print LSF.getSF(13, 20, 2.5, sigma=sigma)
+    print LSF.getSF(13, 20, -2.5, sigma=sigma)
 
-    print LSF.getSF(11, 200, 2.5)
-    print LSF.getSF(11, 200, -2.5)
-    print LSF.getSF(13, 200, 2.5)
-    print LSF.getSF(13, 200, -2.5)
+    print LSF.getSF(11, 200, 2.5, sigma=sigma)
+    print LSF.getSF(11, 200, -2.5, sigma=sigma)
+    print LSF.getSF(13, 200, 2.5, sigma=sigma)
+    print LSF.getSF(13, 200, -2.5, sigma=sigma)
 
     print "2017, medium"
     LSF = LeptonSF(year=2017, ID="medium")
-    print LSF.getSF(11, 20, 1)
-    print LSF.getSF(11, 20, -1)
-    print LSF.getSF(13, 20, 1)
-    print LSF.getSF(13, 20, -1)
+    print LSF.getSF(11, 20, 1, sigma=sigma)
+    print LSF.getSF(11, 20, -1, sigma=sigma)
+    print LSF.getSF(13, 20, 1, sigma=sigma)
+    print LSF.getSF(13, 20, -1, sigma=sigma)
 
-    print LSF.getSF(11, 200, 1)
-    print LSF.getSF(11, 200, -1)
-    print LSF.getSF(13, 200, 1)
-    print LSF.getSF(13, 200, -1)
+    print LSF.getSF(11, 200, 1, sigma=sigma)
+    print LSF.getSF(11, 200, -1, sigma=sigma)
+    print LSF.getSF(13, 200, 1, sigma=sigma)
+    print LSF.getSF(13, 200, -1, sigma=sigma)
 
-    print LSF.getSF(11, 20, 2.5)
-    print LSF.getSF(11, 20, -2.5)
-    print LSF.getSF(13, 20, 2.5)
-    print LSF.getSF(13, 20, -2.5)
+    print LSF.getSF(11, 20, 2.5, sigma=sigma)
+    print LSF.getSF(11, 20, -2.5, sigma=sigma)
+    print LSF.getSF(13, 20, 2.5, sigma=sigma)
+    print LSF.getSF(13, 20, -2.5, sigma=sigma)
 
-    print LSF.getSF(11, 200, 2.5)
-    print LSF.getSF(11, 200, -2.5)
-    print LSF.getSF(13, 200, 2.5)
-    print LSF.getSF(13, 200, -2.5)
+    print LSF.getSF(11, 200, 2.5, sigma=sigma)
+    print LSF.getSF(11, 200, -2.5, sigma=sigma)
+    print LSF.getSF(13, 200, 2.5, sigma=sigma)
+    print LSF.getSF(13, 200, -2.5, sigma=sigma)
 
     print "2017, tight"
     LSF = LeptonSF(year=2017, ID="tight")
-    print LSF.getSF(11, 20, 1)
-    print LSF.getSF(11, 20, -1)
-    print LSF.getSF(13, 20, 1)
-    print LSF.getSF(13, 20, -1)
+    print LSF.getSF(11, 20, 1, sigma=sigma)
+    print LSF.getSF(11, 20, -1, sigma=sigma)
+    print LSF.getSF(13, 20, 1, sigma=sigma)
+    print LSF.getSF(13, 20, -1, sigma=sigma)
 
-    print LSF.getSF(11, 200, 1)
-    print LSF.getSF(11, 200, -1)
-    print LSF.getSF(13, 200, 1)
-    print LSF.getSF(13, 200, -1)
+    print LSF.getSF(11, 200, 1, sigma=sigma)
+    print LSF.getSF(11, 200, -1, sigma=sigma)
+    print LSF.getSF(13, 200, 1, sigma=sigma)
+    print LSF.getSF(13, 200, -1, sigma=sigma)
 
-    print LSF.getSF(11, 20, 2.5)
-    print LSF.getSF(11, 20, -2.5)
-    print LSF.getSF(13, 20, 2.5)
-    print LSF.getSF(13, 20, -2.5)
+    print LSF.getSF(11, 20, 2.5, sigma=sigma)
+    print LSF.getSF(11, 20, -2.5, sigma=sigma)
+    print LSF.getSF(13, 20, 2.5, sigma=sigma)
+    print LSF.getSF(13, 20, -2.5, sigma=sigma)
 
-    print LSF.getSF(11, 200, 2.5)
-    print LSF.getSF(11, 200, -2.5)
-    print LSF.getSF(13, 200, 2.5)
-    print LSF.getSF(13, 200, -2.5)
+    print LSF.getSF(11, 200, 2.5, sigma=sigma)
+    print LSF.getSF(11, 200, -2.5, sigma=sigma)
+    print LSF.getSF(13, 200, 2.5, sigma=sigma)
+    print LSF.getSF(13, 200, -2.5, sigma=sigma)
 
     print "2018, medium"
     LSF = LeptonSF(year=2018, ID="medium")
-    print LSF.getSF(11, 20, 1)
-    print LSF.getSF(11, 20, -1)
-    print LSF.getSF(13, 20, 1)
-    print LSF.getSF(13, 20, -1)
+    print LSF.getSF(11, 20, 1, sigma=sigma)
+    print LSF.getSF(11, 20, -1, sigma=sigma)
+    print LSF.getSF(13, 20, 1, sigma=sigma)
+    print LSF.getSF(13, 20, -1, sigma=sigma)
 
-    print LSF.getSF(11, 200, 1)
-    print LSF.getSF(11, 200, -1)
-    print LSF.getSF(13, 200, 1)
-    print LSF.getSF(13, 200, -1)
+    print LSF.getSF(11, 200, 1, sigma=sigma)
+    print LSF.getSF(11, 200, -1, sigma=sigma)
+    print LSF.getSF(13, 200, 1, sigma=sigma)
+    print LSF.getSF(13, 200, -1, sigma=sigma)
 
-    print LSF.getSF(11, 20, 2.5)
-    print LSF.getSF(11, 20, -2.5)
-    print LSF.getSF(13, 20, 2.5)
-    print LSF.getSF(13, 20, -2.5)
+    print LSF.getSF(11, 20, 2.5, sigma=sigma)
+    print LSF.getSF(11, 20, -2.5, sigma=sigma)
+    print LSF.getSF(13, 20, 2.5, sigma=sigma)
+    print LSF.getSF(13, 20, -2.5, sigma=sigma)
 
-    print LSF.getSF(11, 200, 2.5)
-    print LSF.getSF(11, 200, -2.5)
-    print LSF.getSF(13, 200, 2.5)
-    print LSF.getSF(13, 200, -2.5)
+    print LSF.getSF(11, 200, 2.5, sigma=sigma)
+    print LSF.getSF(11, 200, -2.5, sigma=sigma)
+    print LSF.getSF(13, 200, 2.5, sigma=sigma)
+    print LSF.getSF(13, 200, -2.5, sigma=sigma)
 
     print "2018, tight"
     LSF = LeptonSF(year=2018, ID="tight")
-    print LSF.getSF(11, 20, 1)
-    print LSF.getSF(11, 20, -1)
-    print LSF.getSF(13, 20, 1)
-    print LSF.getSF(13, 20, -1)
+    print LSF.getSF(11, 20, 1, sigma=sigma)
+    print LSF.getSF(11, 20, -1, sigma=sigma)
+    print LSF.getSF(13, 20, 1, sigma=sigma)
+    print LSF.getSF(13, 20, -1, sigma=sigma)
 
-    print LSF.getSF(11, 200, 1)
-    print LSF.getSF(11, 200, -1)
-    print LSF.getSF(13, 200, 1)
-    print LSF.getSF(13, 200, -1)
+    print LSF.getSF(11, 200, 1, sigma=sigma)
+    print LSF.getSF(11, 200, -1, sigma=sigma)
+    print LSF.getSF(13, 200, 1, sigma=sigma)
+    print LSF.getSF(13, 200, -1, sigma=sigma)
 
-    print LSF.getSF(11, 20, 2.5)
-    print LSF.getSF(11, 20, -2.5)
-    print LSF.getSF(13, 20, 2.5)
-    print LSF.getSF(13, 20, -2.5)
+    print LSF.getSF(11, 20, 2.5, sigma=sigma)
+    print LSF.getSF(11, 20, -2.5, sigma=sigma)
+    print LSF.getSF(13, 20, 2.5, sigma=sigma)
+    print LSF.getSF(13, 20, -2.5, sigma=sigma)
 
-    print LSF.getSF(11, 200, 2.5)
-    print LSF.getSF(11, 200, -2.5)
-    print LSF.getSF(13, 200, 2.5)
-    print LSF.getSF(13, 200, -2.5)
+    print LSF.getSF(11, 200, 2.5, sigma=sigma)
+    print LSF.getSF(11, 200, -2.5, sigma=sigma)
+    print LSF.getSF(13, 200, 2.5, sigma=sigma)
+    print LSF.getSF(13, 200, -2.5, sigma=sigma)
