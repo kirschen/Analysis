@@ -36,9 +36,9 @@ keys_ele2017      = { "medium":[( "e2017_ElectronMediumCutBased.root", "EGamma_S
                       "tight": [( "e2017_ElectronTight.root", "EGamma_SF2D" )]
                     }
 
-keys_mu2018       = { "medium":[( "mu2018_RunABCD_SF_ID.root",  "NUM_MediumID_DEN_genTracks_pt_abseta"   ),
+keys_mu2018       = { "medium":[( "mu2018_RunABCD_SF_ID.root",  "NUM_MediumID_DEN_TrackerMuons_pt_abseta"   ),
                                 ( "mu2018_RunABCD_SF_ISO.root", "NUM_TightRelIso_DEN_MediumID_pt_abseta" )],
-                      "tight": [( "mu2018_RunABCD_SF_ID.root",  "NUM_TightID_DEN_genTracks_pt_abseta"   ),
+                      "tight": [( "mu2018_RunABCD_SF_ID.root",  "NUM_TightID_DEN_TrackerMuons_pt_abseta"   ),
                                 ( "mu2018_RunABCD_SF_ISO.root", "NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta" )]
                     }
 
@@ -99,7 +99,7 @@ class LeptonSF:
             self.mu       = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_mu2018[ID]       ]
             self.ele      = [ getObjFromFile(os.path.expandvars(os.path.join(self.dataDir, file)), key) for (file, key) in keys_ele2018[ID]      ]
 
-            for effMap in self.mu + self.ele: assert effMap
+            for effMap in self.ele + self.mu: assert effMap
 
     def getPartialSF( self, effMap, pt, eta, reversed=False ):
         x = eta if not reversed else pt
