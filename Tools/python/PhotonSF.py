@@ -18,7 +18,8 @@ class PhotonSF:
         self.dataDir = "$CMSSW_BASE/src/Analysis/Tools/data/photonSFData/"
 
         if year == 2016:
-            g_file = 'g2016_LegacyReReco_PhotonCutBasedMedium.root'
+            g_file = 'g2016_Fall17V2_2016_Medium_photons.root'
+#            g_file = 'g2016_LegacyReReco_PhotonCutBasedMedium.root'
             g_key  = "EGamma_SF2D"
 
         elif year == 2017:

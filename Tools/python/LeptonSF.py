@@ -22,8 +22,8 @@ keys_mu2016_GH    = { "medium":[( "muon2016_RunGH_SF_ID.root",     "NUM_MediumID
                                 ( "muon2016_RunGH_SF_ISO.root",    "NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt" )]
                     }
 
-keys_ele2016      = { "medium":[( "e2016_LegacyReReco_ElectronMedium.root", "EGamma_SF2D" )],
-                      "tight": [( "e2016_LegacyReReco_ElectronTight.root", "EGamma_SF2D" )],
+keys_ele2016      = { "medium":[( "e2016_LegacyReReco_ElectronMedium_Fall17V2.root", "EGamma_SF2D" )],
+                      "tight": [( "e2016_LegacyReReco_ElectronTight_Fall17V2.root", "EGamma_SF2D" )],
                     }
 
 keys_mu2017       = { "medium":[( "muon2017_RunBCDEF_SF_ID.root",  "NUM_MediumID_DEN_genTracks_pt_abseta"   ),
