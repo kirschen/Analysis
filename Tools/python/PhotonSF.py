@@ -42,10 +42,10 @@ class PhotonSF:
     def getSF(self, pt, eta, sigma=0):
         if eta >= self.g_etaMax:
             logger.warning( "Photon eta out of bounds: %3.2f (need %3.2f <= eta <=% 3.2f)", eta, self.g_etaMin, self.g_etaMax )
-            eta = self.g_etaMax-0.01
+            eta = self.g_etaMax - 0.01
         if eta <= self.g_etaMin:
             logger.warning( "Photon eta out of bounds: %3.2f (need %3.2f <= eta <=% 3.2f)", eta, self.g_etaMin, self.g_etaMax )
-            eta = self.g_etaMin+0.01
+            eta = self.g_etaMin + 0.01
 
         if   pt >= self.g_ptMax: pt = self.g_ptMax - 1
         elif pt <= self.g_ptMin: pt = self.g_ptMin + 1
@@ -60,20 +60,20 @@ if __name__ == "__main__":
     sigma = 1
     print "2016"
     LSF = PhotonSF(year=2016)
-    print LSF.getSF(20, 1, sigma=sigma)
-    print LSF.getSF(20, -1, sigma=sigma)
-    print LSF.getSF(20, 1, sigma=sigma)
-    print LSF.getSF(20, -1, sigma=sigma)
+    print LSF.getSF(10, 1, sigma=sigma)
+    print LSF.getSF(10, -1, sigma=sigma)
+    print LSF.getSF(10, 1, sigma=sigma)
+    print LSF.getSF(10, -1, sigma=sigma)
 
     print LSF.getSF(200, 1, sigma=sigma)
     print LSF.getSF(200, -1, sigma=sigma)
     print LSF.getSF(200, 1, sigma=sigma)
     print LSF.getSF(200, -1, sigma=sigma)
 
-    print LSF.getSF(20, 2.5, sigma=sigma)
-    print LSF.getSF(20, -2.5, sigma=sigma)
-    print LSF.getSF(20, 2.5, sigma=sigma)
-    print LSF.getSF(20, -2.5, sigma=sigma)
+    print LSF.getSF(10, 2.5, sigma=sigma)
+    print LSF.getSF(10, -2.5, sigma=sigma)
+    print LSF.getSF(10, 2.5, sigma=sigma)
+    print LSF.getSF(10, -2.5, sigma=sigma)
 
     print LSF.getSF(200, 2.5, sigma=sigma)
     print LSF.getSF(200, -2.5, sigma=sigma)
@@ -82,20 +82,20 @@ if __name__ == "__main__":
 
     print "2017"
     LSF = PhotonSF(year=2017)
-    print LSF.getSF(20, 1, sigma=sigma)
-    print LSF.getSF(20, -1, sigma=sigma)
-    print LSF.getSF(20, 1, sigma=sigma)
-    print LSF.getSF(20, -1, sigma=sigma)
+    print LSF.getSF(10, 1, sigma=sigma)
+    print LSF.getSF(10, -1, sigma=sigma)
+    print LSF.getSF(10, 1, sigma=sigma)
+    print LSF.getSF(10, -1, sigma=sigma)
 
     print LSF.getSF(200, 1, sigma=sigma)
     print LSF.getSF(200, -1, sigma=sigma)
     print LSF.getSF(200, 1, sigma=sigma)
     print LSF.getSF(200, -1, sigma=sigma)
 
-    print LSF.getSF(20, 2.5, sigma=sigma)
-    print LSF.getSF(20, -2.5, sigma=sigma)
-    print LSF.getSF(20, 2.5, sigma=sigma)
-    print LSF.getSF(20, -2.5, sigma=sigma)
+    print LSF.getSF(10, 2.5, sigma=sigma)
+    print LSF.getSF(10, -2.5, sigma=sigma)
+    print LSF.getSF(10, 2.5, sigma=sigma)
+    print LSF.getSF(10, -2.5, sigma=sigma)
 
     print LSF.getSF(200, 2.5, sigma=sigma)
     print LSF.getSF(200, -2.5, sigma=sigma)
@@ -104,20 +104,20 @@ if __name__ == "__main__":
 
     print "2018"
     LSF = PhotonSF(year=2018)
-    print LSF.getSF(20, 1, sigma=sigma)
-    print LSF.getSF(20, -1, sigma=sigma)
-    print LSF.getSF(20, 1, sigma=sigma)
-    print LSF.getSF(20, -1, sigma=sigma)
+    print LSF.getSF(10, 1, sigma=sigma)
+    print LSF.getSF(10, -1, sigma=sigma)
+    print LSF.getSF(10, 1, sigma=sigma)
+    print LSF.getSF(10, -1, sigma=sigma)
 
     print LSF.getSF(200, 1, sigma=sigma)
     print LSF.getSF(200, -1, sigma=sigma)
     print LSF.getSF(200, 1, sigma=sigma)
     print LSF.getSF(200, -1, sigma=sigma)
 
-    print LSF.getSF(20, 2.5, sigma=sigma)
-    print LSF.getSF(20, -2.5, sigma=sigma)
-    print LSF.getSF(20, 2.5, sigma=sigma)
-    print LSF.getSF(20, -2.5, sigma=sigma)
+    print LSF.getSF(10, 2.5, sigma=sigma)
+    print LSF.getSF(10, -2.5, sigma=sigma)
+    print LSF.getSF(10, 2.5, sigma=sigma)
+    print LSF.getSF(10, -2.5, sigma=sigma)
 
     print LSF.getSF(200, 2.5, sigma=sigma)
     print LSF.getSF(200, -2.5, sigma=sigma)
