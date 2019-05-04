@@ -32,7 +32,7 @@ class LeptonTrackingEfficiency:
         elif self.year == 2018:
             ## EGamma POG, https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaIDRecipesRun2#Cut%20based%20photon%20identification
             e_file          = 'e2018_egammaEffi_EGM2D.root'
-            e_file_lowEt    = 'e2018_egammaEffi_EGM2D_low.root'
+            e_file_lowEt    = 'e2018_egammaEffi_EGM2D.root'
             e_key           = "EGamma_SF2D"
             
         self.e_sf       = getObjFromFile( os.path.expandvars( os.path.join( self.dataDir, e_file       ) ), e_key )
@@ -63,13 +63,13 @@ class LeptonTrackingEfficiency:
 
             # this is a bit awkward because of the seperate SFs for low pt electrons
             if   pt >= self.e_ptMax:       pt = self.e_ptMax - 1 
-            elif pt <  self.e_ptMin_lowEt: pt = self.e_ptMin_lowEt + 1
+            elif pt <= self.e_ptMin_lowEt: pt = self.e_ptMin_lowEt + 1
 
-            if pt < self.e_ptMin: sf_hist = self.e_sf_lowEt
+            if pt <= self.e_ptMin: sf_hist = self.e_sf_lowEt
             else:                  sf_hist = self.e_sf
 
             val    = sf_hist.GetBinContent( sf_hist.FindBin(eta, pt) )
-            valErr = sf_hist.GetBinError( sf_hist.FindBin(eta, pt) )
+            valErr = sf_hist.GetBinError(   sf_hist.FindBin(eta, pt) )
             
             return val + sigma*valErr
 
@@ -86,20 +86,20 @@ if __name__ == "__main__":
     sigma = 0
     print "2016"
     LSF = LeptonTrackingEfficiency(year=2016)
-    print LSF.getSF(11, 20, 1, sigma=sigma)
-    print LSF.getSF(11, 20, -1, sigma=sigma)
-    print LSF.getSF(13, 20, 1, sigma=sigma)
-    print LSF.getSF(13, 20, -1, sigma=sigma)
+    print LSF.getSF(11, 10, 1, sigma=sigma)
+    print LSF.getSF(11, 10, -1, sigma=sigma)
+    print LSF.getSF(13, 10, 1, sigma=sigma)
+    print LSF.getSF(13, 10, -1, sigma=sigma)
 
     print LSF.getSF(11, 200, 1, sigma=sigma)
     print LSF.getSF(11, 200, -1, sigma=sigma)
     print LSF.getSF(13, 200, 1, sigma=sigma)
     print LSF.getSF(13, 200, -1, sigma=sigma)
 
-    print LSF.getSF(11, 20, 2.5, sigma=sigma)
-    print LSF.getSF(11, 20, -2.5, sigma=sigma)
-    print LSF.getSF(13, 20, 2.5, sigma=sigma)
-    print LSF.getSF(13, 20, -2.5, sigma=sigma)
+    print LSF.getSF(11, 10, 2.5, sigma=sigma)
+    print LSF.getSF(11, 10, -2.5, sigma=sigma)
+    print LSF.getSF(13, 10, 2.5, sigma=sigma)
+    print LSF.getSF(13, 10, -2.5, sigma=sigma)
 
     print LSF.getSF(11, 200, 2.5, sigma=sigma)
     print LSF.getSF(11, 200, -2.5, sigma=sigma)
@@ -108,20 +108,20 @@ if __name__ == "__main__":
 
     print "2017"
     LSF = LeptonTrackingEfficiency(year=2017)
-    print LSF.getSF(11, 20, 1, sigma=sigma)
-    print LSF.getSF(11, 20, -1, sigma=sigma)
-    print LSF.getSF(13, 20, 1, sigma=sigma)
-    print LSF.getSF(13, 20, -1, sigma=sigma)
+    print LSF.getSF(11, 10, 1, sigma=sigma)
+    print LSF.getSF(11, 10, -1, sigma=sigma)
+    print LSF.getSF(13, 10, 1, sigma=sigma)
+    print LSF.getSF(13, 10, -1, sigma=sigma)
 
     print LSF.getSF(11, 200, 1, sigma=sigma)
     print LSF.getSF(11, 200, -1, sigma=sigma)
     print LSF.getSF(13, 200, 1, sigma=sigma)
     print LSF.getSF(13, 200, -1, sigma=sigma)
 
-    print LSF.getSF(11, 20, 2.5, sigma=sigma)
-    print LSF.getSF(11, 20, -2.5, sigma=sigma)
-    print LSF.getSF(13, 20, 2.5, sigma=sigma)
-    print LSF.getSF(13, 20, -2.5, sigma=sigma)
+    print LSF.getSF(11, 10, 2.5, sigma=sigma)
+    print LSF.getSF(11, 10, -2.5, sigma=sigma)
+    print LSF.getSF(13, 10, 2.5, sigma=sigma)
+    print LSF.getSF(13, 10, -2.5, sigma=sigma)
 
     print LSF.getSF(11, 200, 2.5, sigma=sigma)
     print LSF.getSF(11, 200, -2.5, sigma=sigma)
@@ -130,20 +130,20 @@ if __name__ == "__main__":
 
     print "2018"
     LSF = LeptonTrackingEfficiency(year=2018)
-    print LSF.getSF(11, 20, 1, sigma=sigma)
-    print LSF.getSF(11, 20, -1, sigma=sigma)
-    print LSF.getSF(13, 20, 1, sigma=sigma)
-    print LSF.getSF(13, 20, -1, sigma=sigma)
+    print LSF.getSF(11, 10, 1, sigma=sigma)
+    print LSF.getSF(11, 10, -1, sigma=sigma)
+    print LSF.getSF(13, 10, 1, sigma=sigma)
+    print LSF.getSF(13, 10, -1, sigma=sigma)
 
     print LSF.getSF(11, 200, 1, sigma=sigma)
     print LSF.getSF(11, 200, -1, sigma=sigma)
     print LSF.getSF(13, 200, 1, sigma=sigma)
     print LSF.getSF(13, 200, -1, sigma=sigma)
 
-    print LSF.getSF(11, 20, 2.5, sigma=sigma)
-    print LSF.getSF(11, 20, -2.5, sigma=sigma)
-    print LSF.getSF(13, 20, 2.5, sigma=sigma)
-    print LSF.getSF(13, 20, -2.5, sigma=sigma)
+    print LSF.getSF(11, 10, 2.5, sigma=sigma)
+    print LSF.getSF(11, 10, -2.5, sigma=sigma)
+    print LSF.getSF(13, 10, 2.5, sigma=sigma)
+    print LSF.getSF(13, 10, -2.5, sigma=sigma)
 
     print LSF.getSF(11, 200, 2.5, sigma=sigma)
     print LSF.getSF(11, 200, -2.5, sigma=sigma)
