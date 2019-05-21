@@ -111,7 +111,7 @@ def copyDPMFiles( fromPath, toPath, toLocal=False, fromLocal=False ):
 if __name__ == "__main__":
 
     # User specific
-    from TTGammaEFT.Tools.user import dpm_directory
+    from Analysis.Tools.user import dpm_directory
 
     def get_parser():
         ''' Argument parser for post-processing module.
