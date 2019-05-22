@@ -10,36 +10,53 @@ def getDPMFiles( path ):
     p = subprocess.Popen( ["dpns-ls %s" %path], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
     return [ item.rstrip("\n") for item in p.stdout.readlines() ]
 
-def convertToPathList( path, local=False ):
+def convertToPathList( paths, local=False ):
     """ convert path with ending * to list of pathes with all possible files
     """
-    dirPath   = "/".join( path.split("/")[:-1] ) + "/"
-    fileParts = path.split("/")[-1].split("*") if not path.split("/")[-1] == "*" else [""]
+    if not isinstance(paths, list) and not isinstance(paths, basestring):
+        print "convertToPathList needs a string or list as input. Exiting..."
+        sys.exit(0)
 
-    if len(fileParts) > 1:
-        # copy abc*fg*jkl*
+    if isinstance(paths, basestring) and not "*" in paths: return [paths]
+    elif isinstance(paths, basestring): paths = [paths]
+
+    allPathList = []
+    for path in paths:
         pathList = []
-        allFiles = os.listdir(dirPath) if local else getDPMFiles(dirPath)
-        for file in allFiles:
-            subString = file
-            copyFile  = True
-            # check if all parts are contained in filename in the right order
-            for part in fileParts:
-                if not part: continue
-                if not part in subString:
-                    copyFile = False
-                    break
-                subString = "".join( subString.split( part )[1:] )
-            if copyFile:
-                pathList.append( os.path.join( dirPath, file ) )
-
-    elif fileParts[0] == "":
-        allFiles = os.listdir(dirPath) if local else getDPMFiles(dirPath)
-        pathList  = [ os.path.join( dirPath, file ) for file in allFiles ]
-    else:
-        pathList  = [ os.path.join( dirPath, fileParts[0] ) ]
-
-    return pathList
+#        print "Checking path " + path
+        dirs = path.split("/")
+        dirPath = ""
+        for i, dir in enumerate(dirs):
+            if not "*" in dir:
+                dirPath += dir + "/"
+                continue
+#            print "Checking dirPath " + dirPath
+            allFiles = os.listdir(dirPath) if local else getDPMFiles(dirPath)
+            for file in allFiles:
+#                print "Checking file " + file
+                subString = file
+                copyFile  = True
+                # check if all parts are contained in filename in the right order
+                for part in dir.split("*"):
+                    if not part: continue
+                    if not part in subString:
+                        copyFile = False
+                        break
+                    subString = "".join( subString.split( part )[1:] )
+                if copyFile:
+                    file = "/".join( [file]+dirs[i+1:] )
+#                    pathList.append( os.path.join( dirPath, file ) )
+#                    print
+#                    print "Found path to print: " + os.path.join( dirPath, file )
+#                    print
+                    pathList += convertToPathList( os.path.join( dirPath, file ), local=local )
+#            if copyFile: break       
+            if pathList: break       
+#        print pathList
+        if not pathList and not "*" in path: allPathList += [path]
+        elif not pathList and "*" in path: continue
+        else: allPathList += pathList
+    return allPathList
 
 def removeDPMFiles( path ):
     """ remove dpm dir or file (only for user dirs)
@@ -143,9 +160,10 @@ if __name__ == "__main__":
     if args.ls:
         if not args.ls.startswith("/dpm/"):
             args.ls = os.path.join( dpm_directory, args.ls )
-
-        for file in getDPMFiles( args.ls ):
-            print file
+        if args.ls.endswith("/"): args.ls += "*"
+        allDirs = convertToPathList( args.ls )
+        for dir in allDirs:        
+            print dir
 
     elif args.cp:
         fromPath, toPath = args.cp
