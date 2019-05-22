@@ -1,13 +1,15 @@
 #!/usr/bin/env python
-"""
-Usage:
-submitCondor.py --query CONDORQUEUENAME --execFile submit_on_lxplus.sh file_with_commands
-Will submit a condor job for each command line in the file_with_commands.
-Each condor job is passed through the execFile (e.g. submit_on_lxplus.sh) to setup the environment.
-Log files by default are stored at /afs/hephy.at/work/
+""" 
+   Usage:
+   submitCondor.py --query CONDORQUEUENAME --execFile submit_on_lxplus.sh file_with_commands
+   Will submit a condor job for each command line in the file_with_commands.
+   Each condor job is passed through the execFile (e.g. submit_on_lxplus.sh) to setup the environment.
+   Log files by default are stored at /afs/hephy.at/work/
 """
 # Standard imports
-import os, time, re
+import os, time, re, sys
+import shlex
+from subprocess import Popen, PIPE
 
 from Analysis.Tools.runUtils import prepareTokens, getSystem
 
@@ -19,6 +21,11 @@ cmssw        = os.getenv("CMSSW_BASE")
 hostname     = os.getenv("HOSTNAME")
 submit_time  = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
+cmd            = "condor_q"
+proc           = Popen( shlex.split(cmd), stdout=PIPE, stderr=PIPE)
+out, err       = proc.communicate()
+current_Schedd = out.split("Schedd: ")[1].split(" :")[0]
+
 if not hostname.startswith("lxplus"):
     raise Exception( "Running submitCondor.py outside of lxplus is not supported yet!" )
 
@@ -28,16 +35,19 @@ logChoices   = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSE
 from optparse import OptionParser
 
 parser = OptionParser()
+parser.add_option('--status',             dest="status",                                 action='store_true',  help="Print status of sched?")
 parser.add_option("--output",             dest="output",             default="/afs/cern.ch/work/%s/%s/condor_output/"%(user_initial, user), help="path for batch output ")
 parser.add_option("--execFile",           dest="execFile",           default="submit_to_lxplus.sh",            help="queue name for condor jobs")
 parser.add_option("--queue",              dest="queue",              default="nextweek", choices=queueChoices, help="queue name for condor jobs")
 parser.add_option("--discSpace",          dest="discSpace",          default=None,       type=int,             help="Request disc space in MB")
 parser.add_option("--memory",             dest="memory",             default=None,       type=int,             help="Request memory in MB")
+parser.add_option('--hephyToken',         dest="hephyToken",                             action='store_true',  help="Use hephyToken?")
 parser.add_option('--dpm',                dest="dpm",                                    action='store_true',  help="Use dpm?")
 parser.add_option('--slc6',               dest="slc6",                                   action='store_true',  help="Use slc6?")
 parser.add_option('--resubmitFailedJobs', dest="resubmitFailedJobs",                     action='store_true',  help="Resubmit Job when exitcode != 0" )
 parser.add_option('--maxRetries',         dest="maxRetries",         default=10,         type=int,             help="Resubmit Job x times. Default is 10" )
 parser.add_option('--dryrun',             dest="dryrun",                                 action='store_true',  help='Run only on a small subset of the data?', )
+parser.add_option("--useSchedd",          dest="useSchedd",          default=current_Schedd,                   help="define a specific condor scheduler or use auto to use the most empty one")
 parser.add_option('--logLevel',           dest="logLevel",           default="INFO",     choices=logChoices,   help="Log level for logging" )
 
 (options,args) = parser.parse_args()
@@ -62,10 +72,26 @@ def getCommands( line ):
 
 if __name__ == '__main__':
 
+    if options.status or options.useSchedd=="auto":
+        cmd      = "condor_status -sched"
+        proc     = Popen( shlex.split(cmd), stdout=PIPE, stderr=PIPE)
+        out, err = proc.communicate()
+        if options.status:
+            print "Current Scheduler: " + current_Schedd
+            print
+            print out
+            sys.exit(0)
+        if options.useSchedd=="auto":
+            # get the scheduler with the min number of jobs running and pending
+            schedds    = filter( lambda line: line.startswith("bigbird"), out.split("\n") )
+            scheddJobs = { sum( map( int, [ nJobs for nJobs in schedd.split(" ") if nJobs ][2:-1] ) ):schedd.split(" ")[0] for schedd in schedds }
+            options.useSchedd = scheddJobs[ min(scheddJobs.keys()) ]
+
     options.output = os.path.join( options.output, submit_time )
 
     # Hephy Token
-    prepareTokens()
+    if options.hephyToken:
+        prepareTokens()
 
     if not len(args) == 1:
         raise Exception("Only one argument accepted! Instead this was given: %s"%args)
@@ -139,7 +165,13 @@ with open(exFile, "w") as f:
     for line in condorCommands:
         f.write(line + '\n')
 
+schedd = "bigbird10.cern.ch"
 # submit
 if not options.dryrun:
-    os.system("condor_submit %s"%exFile)
+    os.environ["_condor_CREDD_HOST"]  = options.useSchedd
+    os.environ["_condor_SCHEDD_HOST"] = options.useSchedd
+    os.system('condor_submit %s'%(exFile))
     os.remove(exFile)
+    print "Jobs have been submitted to scheduler %s"%(options.useSchedd)
+    print "Use 'export _condor_CREDD_HOST=\"%s\" && export _condor_SCHEDD_HOST=\"%s\"' to switch to that scheduler"%(options.useSchedd,options.useSchedd)
+    print "Use 'condor_q' to see the job status"
