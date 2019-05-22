@@ -165,7 +165,6 @@ with open(exFile, "w") as f:
     for line in condorCommands:
         f.write(line + '\n')
 
-schedd = "bigbird10.cern.ch"
 # submit
 if not options.dryrun:
     os.environ["_condor_CREDD_HOST"]  = options.useSchedd
