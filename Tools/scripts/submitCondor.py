@@ -172,5 +172,6 @@ if not options.dryrun:
     os.system('condor_submit %s'%(exFile))
     os.remove(exFile)
     print "Jobs have been submitted to scheduler %s"%(options.useSchedd)
-    print "Use 'export _condor_CREDD_HOST=\"%s\" && export _condor_SCHEDD_HOST=\"%s\"' to switch to that scheduler"%(options.useSchedd,options.useSchedd)
+    if current_Schedd != options.useSchedd:
+        print "Use 'export _condor_CREDD_HOST=\"%s\" && export _condor_SCHEDD_HOST=\"%s\"' to switch to that scheduler"%(options.useSchedd,options.useSchedd)
     print "Use 'condor_q' to see the job status"
