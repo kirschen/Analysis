@@ -15,6 +15,9 @@ elif os.environ['USER'] in ['dspitzba', 'dspitzbart']:
 elif os.environ['USER'] in ['phussain']:
     cache_directory        = "/afs/hephy.at/data/dspitzbart01/cache/"
     dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/prhussai/'
+elif us.environ['USER'] in ['rschoefbeck', 'schoef']:
+    cache_directory        = "/afs/hephy.at/data/dspitzbart01/cache/"
+    dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/schoef/'
 else:
     plot_directory         = "/afs/hephy.at/user/%s/%s/www/Analysis/"%(os.environ['USER'][0],os.environ['USER'])
     cache_directory        = "/afs/hephy.at/data/%s01/Analysis/"%os.environ['USER']
