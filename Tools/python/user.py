@@ -16,7 +16,8 @@ elif os.environ['USER'] in ['phussain']:
     cache_directory        = "/afs/hephy.at/data/dspitzbart01/cache/"
     dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/prhussai/'
 elif os.environ['USER'] in ['rschoefbeck', 'schoef']:
-    cache_directory        = "/afs/hephy.at/data/dspitzbart01/cache/"
+    plot_directory         = "/afs/hephy.at/user/r/rschoefbeck/www/StopsDilepton/"
+    cache_directory        = "/afs/hephy.at/data/rschoefbeck01/cache/"
     dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/schoef/'
 else:
     plot_directory         = "/afs/hephy.at/user/%s/%s/www/Analysis/"%(os.environ['USER'][0],os.environ['USER'])
