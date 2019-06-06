@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
     # Get all NanoAOD tuples for caching
     from Samples.nanoAOD.Fall17_private_legacy_v1 import *
-    from Samples.nanoAOD.Fall17_private           import *
+    #from Samples.nanoAOD.Fall17_private           import *
     from Analysis.Tools.user                      import plot_directory
     
     if args.overwrite: os.remove( cache_directory + "/puProfiles/puProfiles_v2.sql" )

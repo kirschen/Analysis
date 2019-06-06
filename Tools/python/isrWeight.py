@@ -8,10 +8,10 @@ class ISRweight:
     self.norm       = 1.071
     self.njet_max   = len(self.weights)-1
 
-  def getWeightString(self, sigma=0):
+  def getWeightString(self, norm=1, sigma=0):
 
     weights = [ w+(sigma*self.weights_syst[i]) for i, w in enumerate(self.weights)]
-    weightStr = '( '
+    weightStr = '%s * %s * ( '%(self.norm, norm)
 
     for njet, weight in enumerate(weights):
       op = '=='
@@ -22,6 +22,6 @@ class ISRweight:
 
     return weightStr
     
-  def getWeight(self, r, sigma=0):
+  def getWeight(self, r, norm=1, sigma=0):
     weights = [ w+(sigma*self.weights_syst[i]) for i, w in enumerate(self.weights)]
-    return self.norm*weights[r.nISR] if r.nISR <= self.njet_max else self.norm*weights[self.njet_max]
+    return norm*self.norm*weights[r.nISR] if r.nISR <= self.njet_max else self.norm*weights[self.njet_max]
