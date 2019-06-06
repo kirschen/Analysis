@@ -54,8 +54,9 @@ class DirDB:
         if not overwrite:
             if os.path.exists( filename ):
                 logger.warning( "Already found key '%r'. Do not store data.", key )
-                return
+                return data
         pickle.dump( data, file( filename, 'w' ) )
+        return data
 
 if __name__ == "__main__":
     import Analysis.Tools.logger as logger

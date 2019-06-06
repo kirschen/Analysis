@@ -38,7 +38,7 @@ sfFile2016DeepCSV_FastSim   = 'deepcsv_13TEV_16SL_18_3_2019.csv'
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation94X
 sfFile2017DeepCSV_FastSim   = 'deepcsv_13TEV_17SL_18_3_2019.csv'
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation102X
-sfFile2018DeepCSV_FastSim   = 'deepcsv_13TEV_1718SLSame_18_3_2019ExUnc.csv'
+sfFile2018DeepCSV_FastSim   = 'deepcsv_13TEV_18SL_7_5_2019.csv'
 
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation2016Legacy
 sfFile2016DeepCSV  = 'b2016_DeepCSV_2016LegacySF_V1.csv' #Moriond2019
