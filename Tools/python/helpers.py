@@ -4,7 +4,7 @@
 import os, sys, uuid, subprocess
 import ROOT
 import itertools
-from math                             import pi, sqrt, cosh, cos
+from math                             import pi, sqrt, cosh, cos, sin
 from array                            import array
 
 # Logging
@@ -354,6 +354,12 @@ def deltaR2(l1, l2):
 
 def deltaR(l1, l2):
     return sqrt(deltaR2(l1,l2))
+
+def lp( l_pt, l_phi, met_pt, met_phi ):
+    met = ROOT.TVector2( met_pt*cos(met_phi), met_pt*sin(met_phi) )
+    l   = ROOT.TVector2( l_pt*cos(l_phi), l_pt*sin(l_phi) )
+    w   = met + l 
+    return ( w*l ) / (w*w )
 
 # Returns (closest mass, index1, index2)
 def closestOSDLMassToMZ(leptons):
