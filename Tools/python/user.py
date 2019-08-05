@@ -15,9 +15,14 @@ elif os.environ['USER'] in ['dspitzba', 'dspitzbart']:
 elif os.environ['USER'] in ['phussain']:
     cache_directory        = "/afs/hephy.at/data/dspitzbart01/cache/"
     dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/prhussai/'
-elif os.environ['USER'] in ['rschoefbeck', 'schoef']:
+elif os.environ['USER'] in ['rschoefbeck']:
     plot_directory         = "/afs/hephy.at/user/r/rschoefbeck/www/StopsDilepton/"
     cache_directory        = "/afs/hephy.at/data/rschoefbeck01/cache/"
+    dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/schoef/'
+elif os.environ['USER'] in ['schoef']:
+    plot_directory         = "/afs/hephy.at/user/r/rschoefbeck/www/StopsDilepton/"
+    cache_directory        = "/afs/hephy.at/data/rschoefbeck01/cache/"
+    cern_proxy_certificate = "/afs/cern.ch/user/s/schoef/private/.proxy"
     dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/schoef/'
 else:
     plot_directory         = "/afs/hephy.at/user/%s/%s/www/Analysis/"%(os.environ['USER'][0],os.environ['USER'])

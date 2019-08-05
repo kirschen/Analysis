@@ -427,13 +427,13 @@ def mapRootFile( rootFile ):
     rf.Map()
     rf.Close()
 
-def scanRootFile( rootFile, var="nJet", thresh=200 ):
-    """ uses TChain.Scan() function to check entries for corrupt root files
-    """
-    tchain = ROOT.TChain( "Events" )
-    tchain.Add( rootFile )
-    tchain.Scan( "%s"%var, "%s>%i"%(var, thresh))
-    tchain.Reset()
+#def scanRootFile( rootFile, var="nJet", thresh=200 ):
+#    """ uses TChain.Scan() function to check entries for corrupt root files
+#    """
+#    tchain = ROOT.TChain( "Events" )
+#    tchain.Add( rootFile )
+#    tchain.Scan( "%s"%var, "%s>%i"%(var, thresh))
+#    tchain.Reset()
 
 def checkWeight( rootFile ):
     """ uses TChain.Scan() function to check entries for corrupt root files
@@ -443,7 +443,7 @@ def checkWeight( rootFile ):
     tchain.Scan( "weight", "TMath::IsNaN(weight)")
     tchain.Reset()
 
-def deepCheckRootFile( rootFile, var="nJet", thresh=200 ):
+def deepCheckRootFile( rootFile ):
     """ some root files are corrupt but can be opened and have all branches
         the error appears when checking every event after some time as a "basket" error
         this can be checked using TFile.Map()
@@ -475,12 +475,7 @@ def deepCheckWeight( file ):
     from RootTools.core.Sample import Sample
 
     # convert dpm file pathes
-    if file.startswith("root:"): file = "/dpm/" + file.split("/dpm/")[1]
-
-    if file.startswith("root:"):
-        sample = Sample.fromDPMDirectory(name="sample", treeName="Events", directory=file)
-    else:
-        sample = Sample.fromFiles(name="sample", treeName="Events", files=file)
+    sample = Sample.fromFiles(name="sample", treeName="Events", files=file)
     val = sample.getYieldFromDraw(weightString="weight" )['val']
     del sample
 
