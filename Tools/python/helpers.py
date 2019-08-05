@@ -15,6 +15,11 @@ logger = logging.getLogger(__name__)
 ROOT.gROOT.LoadMacro("$CMSSW_BASE/src/Analysis/Tools/scripts/tdrstyle.C")
 ROOT.setTDRStyle()
 
+def add_histos( l ):
+    res = l[0].Clone()
+    for h in l[1:]: res.Add(h)
+    return res
+
 def natural_sort(list, key=lambda s:s):
     """
     Sort the list into natural alphanumeric order.
