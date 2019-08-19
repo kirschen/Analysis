@@ -471,9 +471,13 @@ def deepCheckWeight( file ):
 
     # convert dpm file pathes
     sample = Sample.fromFiles(name="sample", treeName="Events", files=file)
+    # check for branch:
+    l = sample.chain.GetListOfBranches()
+    if not 'weight' in [ l.At(i).GetName() for i in range(l.GetSize()) ]:
+        return 0
     val = sample.getYieldFromDraw(weightString="weight" )['val']
     del sample
-
+    #logger.debug("Val in deepCheckWeight: %r", val) 
     return not isnan(val)
     
 def mTsq( p1, p2 ):
