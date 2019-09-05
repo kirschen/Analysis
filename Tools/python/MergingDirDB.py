@@ -85,7 +85,7 @@ class MergingDirDB:
     def contains(self, key):
         ''' Get all entries in the database matching the provided key.
         '''
-        self.get(key) is not None
+        return self.get(key) is not None
 
     # Here we collect all files from other processes. 
     def tmp_files( self ):
