@@ -82,6 +82,11 @@ class MergingDirDB:
         # if we don't alread have the key, load it from all files and remember it in case you're asked again:
         return self.read_from_all_files( key )
 
+    def contains(self, key):
+        ''' Get all entries in the database matching the provided key.
+        '''
+        self.get(key) is not None
+
     # Here we collect all files from other processes. 
     def tmp_files( self ):
         return [ os.path.join( self.directory, f ) for f in os.listdir(self.directory) if f.startswith( 'tmp_') ]
