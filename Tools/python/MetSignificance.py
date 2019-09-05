@@ -51,7 +51,7 @@ class MetSignificance:
         self.name             = sample.name
         self.postfix          = "_for_%s"%self.name
         self.files            = [ f for f in sample.files if nonEmptyFile(f) ]
-        self.outfiles         = [ self.output_directory + '/' + x.split('/')[-1].replace('.root', "%s.root"%self.postfix) for x in self.files ]
+        self.outfiles         = None
 
         if year == 2016:
             metSigParamsMC      = [1.617529475909303, 1.4505983036866312, 1.411498565372343, 1.4087559908291813, 1.3633674107893856, 0.0019861227075085516, 0.6539410816436597]
@@ -142,12 +142,20 @@ class MetSignificance:
             self.modules.append( METSigProducer(JER, self.metSigParams, METCollection="MET", useRecorr=True, calcVariations=(not self.isData), jetThreshold=25.) )
 
     def __call__( self, cut ):
-        p = PostProcessor( self.output_directory, self.files, cut=cut, modules=self.modules, postfix=self.postfix)
+        newFileList = []
         logger.info("Starting nanoAOD postprocessing")
-        p.run()
+        for f in self.files:
+            # need a hash to avoid data loss
+            file_hash = str(hash(f))
+            p = PostProcessor( self.output_directory, [f], cut=cut, modules=self.modules, postfix="%s_%s"%(self.postfix, file_hash))
+            p.run()
+            newFileList += [output_directory + '/' + f.split('/')[-1].replace('.root', '%s_%s.root'%(self.postfix, file_hash))]
         logger.info("Done. Replacing input files for further processing.")
-    
+        self.outfiles = newFileList
+
     def getNewSampleFilenames( self ):
         # return sample.files
         return self.outfiles
+
+
 
