@@ -15,6 +15,11 @@ logger = logging.getLogger(__name__)
 ROOT.gROOT.LoadMacro("$CMSSW_BASE/src/Analysis/Tools/scripts/tdrstyle.C")
 ROOT.setTDRStyle()
 
+def add_histos( l ):
+    res = l[0].Clone()
+    for h in l[1:]: res.Add(h)
+    return res
+
 def natural_sort(list, key=lambda s:s):
     """
     Sort the list into natural alphanumeric order.
@@ -187,14 +192,17 @@ def getObjFromFile(fname, hname):
     ROOT.gDirectory.cd(gDir+':/')
     return res
 
-def writeObjToFile(fname, obj):
+def writeObjToFile(fname, obj, update=False):
     gDir = ROOT.gDirectory.GetName()
-    f = ROOT.TFile(fname, 'recreate')
+    if update:
+        f = ROOT.TFile(fname, 'UPDATE')
+    else:
+        f = ROOT.TFile(fname, 'recreate')
     objw = obj.Clone()
     objw.Write()
     f.Close()
     ROOT.gDirectory.cd(gDir+':/')
-    return
+    return 
 
 def getVarValue(c, var, n=-1):
     try:
@@ -422,13 +430,13 @@ def mapRootFile( rootFile ):
     rf.Map()
     rf.Close()
 
-def scanRootFile( rootFile, var="nJet", thresh=200 ):
-    """ uses TChain.Scan() function to check entries for corrupt root files
-    """
-    tchain = ROOT.TChain( "Events" )
-    tchain.Add( rootFile )
-    tchain.Scan( "%s"%var, "%s>%i"%(var, thresh))
-    tchain.Reset()
+#def scanRootFile( rootFile, var="nJet", thresh=200 ):
+#    """ uses TChain.Scan() function to check entries for corrupt root files
+#    """
+#    tchain = ROOT.TChain( "Events" )
+#    tchain.Add( rootFile )
+#    tchain.Scan( "%s"%var, "%s>%i"%(var, thresh))
+#    tchain.Reset()
 
 def checkWeight( rootFile ):
     """ uses TChain.Scan() function to check entries for corrupt root files
@@ -438,7 +446,7 @@ def checkWeight( rootFile ):
     tchain.Scan( "weight", "TMath::IsNaN(weight)")
     tchain.Reset()
 
-def deepCheckRootFile( rootFile, var="nJet", thresh=200 ):
+def deepCheckRootFile( rootFile ):
     """ some root files are corrupt but can be opened and have all branches
         the error appears when checking every event after some time as a "basket" error
         this can be checked using TFile.Map()
@@ -470,15 +478,14 @@ def deepCheckWeight( file ):
     from RootTools.core.Sample import Sample
 
     # convert dpm file pathes
-    if file.startswith("root:"): file = "/dpm/" + file.split("/dpm/")[1]
-
-    if file.startswith("root:"):
-        sample = Sample.fromDPMDirectory(name="sample", treeName="Events", directory=file)
-    else:
-        sample = Sample.fromFiles(name="sample", treeName="Events", files=file)
+    sample = Sample.fromFiles(name="sample", treeName="Events", files=file)
+    # check for branch:
+    l = sample.chain.GetListOfBranches()
+    if not 'weight' in [ l.At(i).GetName() for i in range(l.GetSize()) ]:
+        return 0
     val = sample.getYieldFromDraw(weightString="weight" )['val']
     del sample
-
+    #logger.debug("Val in deepCheckWeight: %r", val) 
     return not isnan(val)
     
 def mTsq( p1, p2 ):

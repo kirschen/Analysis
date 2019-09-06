@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 g16_keys = [( "g2016_ScalingFactors_80X_Summer16.root", "Scaling_Factors_CSEV_R9 Inclusive"   ),
             ( "g2016_ScalingFactors_80X_Summer16.root", "Scaling_Factors_HasPix_R9 Inclusive" )]
 
-# UPDATE 2018 WHEN AVAILABLE, for all years the same?
+# UPDATE 2017 WHEN AVAILABLE, for all years the same?
 g17_keys = [( "g2016_ScalingFactors_80X_Summer16.root", "Scaling_Factors_CSEV_R9 Inclusive"   ),
             ( "g2016_ScalingFactors_80X_Summer16.root", "Scaling_Factors_HasPix_R9 Inclusive" )]
 
