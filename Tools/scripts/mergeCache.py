@@ -36,9 +36,10 @@ if __name__ == '__main__':
         dirs.append( args[0] )
     for (dirpath, dirnames, filenames) in os.walk(args[0]):
         for dirname in dirnames:
-            if test_if_cache( os.path.join( args[0], dirname ) ):
-                dirs.append( os.path.join( args[0], dirname ) )
-
+            print os.path.join( args[0], dirpath, dirname )
+            if test_if_cache( os.path.join( args[0], dirpath, dirname ) ):
+                dirs.append( os.path.join( args[0], dirpath, dirname ) )
+    
     for dir in dirs:
         logger.info( "Now merging %s", dir )
         db = MergingDirDB( dir )

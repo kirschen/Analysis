@@ -112,10 +112,14 @@ class MergingDirDB:
         return results[-1][0]
         
     def merge( self, clear = False):
+        if len(self.tmp_files())==0:
+            logger.info( "No tmp files, nothing to do.")
+            return
         if os.path.exists( self.merged_file() ):
             result = read_dict_from_file( self.merged_file() )
         else:
             result = {}
+        logger.info( 'Found %i keys in merged file.', len(result.keys()) )
         # result will be 'none' if loading from an existing merge file failed.
         # That will result in an error below which is what we want, because in that case we don't want to write anything
         results = []
@@ -125,7 +129,7 @@ class MergingDirDB:
         for _result, _ in results:
             result.update( pickle.load(file(_result)) )
         pickle.dump(result, file(self.merged_file(), 'w'))
-
+        logger.info( 'Wrote %i keys to merged file.', len(result.keys()) )
         
         if clear and os.path.exists( self.merged_file() ):
             try:
@@ -136,6 +140,7 @@ class MergingDirDB:
             logger.info( "Merged pkl file %s seems OK, will delete tmp files.", self.merged_file() )
             for f in self.tmp_files():
                 os.remove( f )
+        return True
 
 if __name__ == "__main__":
     import Analysis.Tools.logger as logger
