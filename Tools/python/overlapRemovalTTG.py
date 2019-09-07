@@ -1,5 +1,11 @@
 from Analysis.Tools.helpers         import deltaR
 
+""" 
+Make sure you use nMax = 1000 (or large number) when reading in genParts from nanoAOD using VectorTreeVariable.fromString('GenPart[%s]'%variables, nMax = 1000)
+These functions use gen-matching where the references to ALL gen particles are needed
+
+""" 
+
 def isIsolatedPhoton( g, genparts, coneSize=0.2, ptCut=5, excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] ):
     for other in genparts:
         if other['pdgId']              == 22:       continue   # Avoid photon or generator copies of it
@@ -27,7 +33,8 @@ def getParentIds( g, genParticles ):
 
 def hasMesonMother( parentList ):
     if not parentList: return False
-    return max( map( abs, parentList ) ) > 37
+    maxParentID = max( map( abs, parentList ) )
+    return maxParentID > 37 and maxParentID < 999
 
 def photonFromTopDecay( parentList ):
     if not parentList:      return False  # empty list
@@ -46,5 +53,6 @@ def getPhotonCategory( g, genparts ):
 
     if abs(g['pdgId']) == 22 and isIsolated and not hasMeson: return 0        # type 0: genuine photon:   isolated photon with no meson in parent list
     if abs(g['pdgId']) == 22 and isIsolated and hasMeson:     return 1        # type 1: hadronic photon:  isolated photon with meson in parent list
-    if abs(g['pdgId']) == 11 and isIsolated and not hasMeson: return 2        # type 2: miss-Id electron: electron with deltaR and meson-mother requirement from genuine photon
-    return 3                                                                  # type 3: hadronic fake:    none of the above ( e.g. non-isolated )
+    if abs(g['pdgId']) == 11 and not hasMeson:                return 2        # type 2: mis-Id electron: electron with deltaR and meson-mother requirement from genuine photon
+#    if abs(g['pdgId']) == 11 and isIsolated and not hasMeson: return 2        # type 2: mis-Id electron: electron with deltaR and meson-mother requirement from genuine photon
+    return 3
