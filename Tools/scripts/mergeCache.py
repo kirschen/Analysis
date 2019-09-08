@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 Usage:
-mergeCache.py <cache-directory> 
+mergeCache.py <directory> 
 """
 
 # Standard imports
@@ -12,6 +12,7 @@ from Analysis.Tools.MergingDirDB import MergingDirDB
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option('--logLevel',  choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'], default='INFO', help="Log level for logging" )
+parser.add_option('--noDelete', dest="noDelete", default=False, action='store_true', help="Delete tmp files?")
 
 (options,args) = parser.parse_args()
 
@@ -43,4 +44,4 @@ if __name__ == '__main__':
     for dir in dirs:
         logger.info( "Now merging %s", dir )
         db = MergingDirDB( dir )
-        db.merge( clear = True )
+        db.merge( clear = not options.noDelete )

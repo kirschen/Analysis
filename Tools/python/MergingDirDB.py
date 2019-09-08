@@ -33,14 +33,19 @@ def read_dict_from_file( f ):
     return None
 
 class MergingDirDB:
-    def __init__( self, directory ):
+    def __init__( self, directory, init_on_start = True):
         '''
         Will create the directory if it doesn't exist 
         '''
         # work directory
         self.directory = directory
         # dictinary where the instance stores its unique 
-        self.data_dict  = {}
+
+        # read all files when starting?
+        if init_on_start:
+            self.data_dict = self.data_from_all_files()
+        else:
+            self.data_dict  = {}
 
         # create directory
         if not os.path.isdir( self.directory ):
@@ -61,6 +66,20 @@ class MergingDirDB:
 #        
 #        self.unique_tmp_file = 'tmp_'+str(uuid.uuid4()) 
 
+    def data_from_all_files( self ):
+        '''Read from all files'''
+        files = self.tmp_files()
+        if os.path.exists( self.merged_file() ):
+            files.append( self.merged_file() )
+        files = [ (f, os.path.getmtime(f)) for f in files ]
+        files.sort( key = lambda r:r[1] )
+
+        data = {} 
+        for f, _ in files:
+            data.update( pickle.load( file(f) ) )
+
+        return data
+
     def add(self, key, data, overwrite=False):
 
         if not overwrite:
@@ -80,7 +99,7 @@ class MergingDirDB:
 
         if self.data_dict.has_key( key ): return self.data_dict[ key ]
         # if we don't alread have the key, load it from all files and remember it in case you're asked again:
-        return self.read_from_all_files( key )
+        return self.read_from_all_files(key)
 
     def contains(self, key):
         ''' Get all entries in the database matching the provided key.
