@@ -41,15 +41,15 @@ class MergingDirDB:
         self.directory = directory
         # dictinary where the instance stores its unique 
 
+        # create directory
+        if not os.path.isdir( self.directory ):
+            os.makedirs( self.directory ) 
+
         # read all files when starting?
         if init_on_start:
             self.data_dict = self.data_from_all_files()
         else:
             self.data_dict  = {}
-
-        # create directory
-        if not os.path.isdir( self.directory ):
-            os.makedirs( self.directory ) 
 
         # make a unique pkl file to write for this process
         self.unique_tmp_file = 'tmp_'+str(uuid.uuid4()) 
