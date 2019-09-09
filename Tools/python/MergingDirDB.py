@@ -13,12 +13,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Try to read a result from a single file. 
-def read_from_file( f, key = None):
+def read_from_file( f, key = None, forgiving = True):
     if os.path.exists( f ):
         try:
             with open(f) as _f:
                 res = pickle.load(_f)
-            if key:
+            if key is not None:
                 if res.has_key( key ):
                     return res[ key ]
             else:
@@ -34,21 +34,8 @@ def read_from_file( f, key = None):
             pass 
         except Exception as e: #something else wrong?
             logger.error( "Error reading file %s", f )
-            raise e
-    return None
-
-# Try to read a result from a single file. 
-def read_dict_from_file( f ):
-    if os.path.exists(f):
-        try:
-            with open(f) as _f:
-                res = pickle.load(_f)
-            return res
-        except IOError:
-            pass
-        except Exception as e:
-            logger.error( "Error reading file %s", f )
-            raise e
+            if not forgiving:
+                raise e
     return None
 
 class MergingDirDB:
@@ -160,11 +147,21 @@ class MergingDirDB:
             logger.info( "No tmp files, nothing to do.")
             return
         if os.path.exists( self.merged_file() ):
-            result = read_dict_from_file( self.merged_file() )
+            f = self.merged_file()
+            result = None
+            if os.path.exists(f):
+                try:
+                    with open(f) as _f:
+                        result = pickle.load(_f)
+                except IOError:
+                    pass
+                except Exception as e:
+                    logger.error( "Error reading file %s", f )
+                    raise e
         else:
             result = {}
         logger.info( 'Found %i keys in merged file.', len(result.keys()) )
-        # result will be 'none' if loading from an existing merge file failed.
+        # result will be 'None' if loading from an existing merge file failed.
         # That will result in an error below which is what we want, because in that case we don't want to write anything
         results = []
         for f in self.tmp_files():
