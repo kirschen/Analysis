@@ -51,11 +51,13 @@ class MergingDirDB:
         if not os.path.isdir( self.directory ):
             os.makedirs( self.directory ) 
 
+        # new data
+        self.data_dict = {}
         # read all files when starting?
         if init_on_start:
-            self.data_dict = self.data_from_all_files()
+            self.data_on_disk_dict = self.data_from_all_files()
         else:
-            self.data_dict  = {}
+            self.data_on_disk_dict = {}
 
         # make a unique pkl file to write for this process
         self.unique_tmp_file = 'tmp_'+str(uuid.uuid4()) 
@@ -110,6 +112,7 @@ class MergingDirDB:
         '''
 
         if self.data_dict.has_key( key ): return self.data_dict[ key ]
+        if self.data_on_disk_dict.has_key( key ): return self.data_on_disk_dict[ key ]
         # if we don't alread have the key, load it from all files and remember it in case you're asked again:
         return self.read_from_all_files(key)
 
