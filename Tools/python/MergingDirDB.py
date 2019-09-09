@@ -15,21 +15,38 @@ logger = logging.getLogger(__name__)
 # Try to read a result from a single file. 
 def read_key_from_file( f, key ):
     if os.path.exists( f ):
+        warn = False
         try:
-            tmp = pickle.load(file(f))
+            with open(f) as _f:
+                tmp = pickle.load(_f)
             if tmp.has_key( key ):
                 return tmp[ key ]
-        except IOError:
-            pass # Nothing found
+        except IOError:# Nothing found
+            logger.warning( "Warning! Ignoring IOError when reading %s", f)
+            pass 
+        except ValueError:# It can be that we're loading from a tmp file that's currently being written. This gives 'ValueError: insecure string pickle'
+            logger.warning( "Warning! Ignoring ValueError when reading %s", f)
+            pass
+        except EOFError:#same
+            logger.warning( "Warning! Ignoring EOFError when reading %s", f)
+            pass 
+        except e: #something else wrong?
+            logger.error( "Error reading file %s", f )
+            raise e
     return None
 
 # Try to read a result from a single file. 
 def read_dict_from_file( f ):
     if os.path.exists(f):
         try:
-            return pickle.load(file(f))
+            with open(f) as _f:
+                res = pickle.load(_f)
+            return res
         except IOError:
-            pass # Something wrong 
+            pass
+        except e:
+            logger.error( "Error reading file %s", f )
+            raise e
     return None
 
 class MergingDirDB:
@@ -76,7 +93,12 @@ class MergingDirDB:
 
         data = {} 
         for f, _ in files:
-            data.update( pickle.load( file(f) ) )
+            try:
+                with open(f) as _f:
+                    data.update( pickle.load( _f ) )
+            except e:
+                logger.error( "Error reading file %s", f )
+                raise e
 
         return data
 
@@ -89,7 +111,12 @@ class MergingDirDB:
 
         # Add data to private dictinary and store the file
         self.data_dict[key] = data 
-        pickle.dump( self.data_dict, file( os.path.join( self.directory, self.unique_tmp_file), 'w' ) )
+        try:
+            with open(os.path.join( self.directory, self.unique_tmp_file), 'w') as _f:
+                pickle.dump( self.data_dict, _f )
+        except e:
+            logger.error( "Something wrong with file %s",  os.path.join( self.directory, self.unique_tmp_file) )
+            raise e
         logger.debug( "Added key %r to file %s", key, os.path.join( self.directory, self.unique_tmp_file) )
         return data
 
@@ -146,13 +173,24 @@ class MergingDirDB:
             results.append( (f, os.path.getmtime( f )) )
         results.sort( key = lambda r:r[1] )
         for _result, _ in results:
-            result.update( pickle.load(file(_result)) )
-        pickle.dump(result, file(self.merged_file(), 'w'))
+            try:
+                with open(_result) as _f:
+                    result.update( pickle.load(_f) )
+            except e:
+                logger.error( "Something wrong with file %s", _result)
+                raise e
+        try:
+            with open(self.merged_file(), 'w') as _f:
+                pickle.dump(result, _f)
+        except e:
+            logger.error( "Something wrong with file %s", self.merged_file() )
+            raise e
         logger.info( 'Wrote %i keys to merged file.', len(result.keys()) )
         
         if clear and os.path.exists( self.merged_file() ):
             try:
-                pickle.load(file( self.merged_file()))
+                with open(self.merged_file()) as _f:
+                    pickle.load(_f)
             except:
                 logger.error( "Could not load merged pickle file %s. Will not delete tmp files.",  self.merged_file() )
                 return
