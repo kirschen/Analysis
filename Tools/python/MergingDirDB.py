@@ -30,7 +30,7 @@ def read_key_from_file( f, key ):
         except EOFError:#same
             logger.warning( "Warning! Ignoring EOFError when reading %s", f)
             pass 
-        except e: #something else wrong?
+        except Exception as e: #something else wrong?
             logger.error( "Error reading file %s", f )
             raise e
     return None
@@ -44,7 +44,7 @@ def read_dict_from_file( f ):
             return res
         except IOError:
             pass
-        except e:
+        except Exception as e:
             logger.error( "Error reading file %s", f )
             raise e
     return None
@@ -96,7 +96,7 @@ class MergingDirDB:
             try:
                 with open(f) as _f:
                     data.update( pickle.load( _f ) )
-            except e:
+            except Exception as e:
                 logger.error( "Error reading file %s", f )
                 raise e
 
@@ -114,7 +114,7 @@ class MergingDirDB:
         try:
             with open(os.path.join( self.directory, self.unique_tmp_file), 'w') as _f:
                 pickle.dump( self.data_dict, _f )
-        except e:
+        except Exception as e:
             logger.error( "Something wrong with file %s",  os.path.join( self.directory, self.unique_tmp_file) )
             raise e
         logger.debug( "Added key %r to file %s", key, os.path.join( self.directory, self.unique_tmp_file) )
@@ -176,13 +176,13 @@ class MergingDirDB:
             try:
                 with open(_result) as _f:
                     result.update( pickle.load(_f) )
-            except e:
+            except Exception as e:
                 logger.error( "Something wrong with file %s", _result)
                 raise e
         try:
             with open(self.merged_file(), 'w') as _f:
                 pickle.dump(result, _f)
-        except e:
+        except Exception as e:
             logger.error( "Something wrong with file %s", self.merged_file() )
             raise e
         logger.info( 'Wrote %i keys to merged file.', len(result.keys()) )
