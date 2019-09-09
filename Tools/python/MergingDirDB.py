@@ -13,14 +13,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Try to read a result from a single file. 
-def read_key_from_file( f, key ):
+def read_from_file( f, key = None):
     if os.path.exists( f ):
-        warn = False
         try:
             with open(f) as _f:
-                tmp = pickle.load(_f)
-            if tmp.has_key( key ):
-                return tmp[ key ]
+                res = pickle.load(_f)
+            if key:
+                if res.has_key( key ):
+                    return res[ key ]
+            else:
+                return res
         except IOError:# Nothing found
             logger.warning( "Warning! Ignoring IOError when reading %s", f)
             pass 
@@ -84,22 +86,18 @@ class MergingDirDB:
 #        self.unique_tmp_file = 'tmp_'+str(uuid.uuid4()) 
 
     def data_from_all_files( self ):
-        '''Read from all files'''
+        '''Read from all files in increasing order of unix time.'''
         files = self.tmp_files()
         if os.path.exists( self.merged_file() ):
             files.append( self.merged_file() )
         files = [ (f, os.path.getmtime(f)) for f in files ]
         files.sort( key = lambda r:r[1] )
-
         data = {} 
         for f, _ in files:
-            try:
-                with open(f) as _f:
-                    data.update( pickle.load( _f ) )
-            except Exception as e:
-                logger.error( "Error reading file %s", f )
-                raise e
-
+            _data = read_from_file( f )
+            if _data:
+                data.update(_data)
+                
         return data
 
     def add(self, key, data, overwrite=False):
@@ -148,7 +146,7 @@ class MergingDirDB:
            the result and return the newest according to unix modification time'''
         results = [] 
         for f in self.tmp_files() + [self.merged_file()]:
-            result =  read_key_from_file( f, key )
+            result =  read_from_file( f, key )
             if result is not None:
                 results.append( [ result, os.path.getmtime( f ) ] )
         if len(results)==0: return None
