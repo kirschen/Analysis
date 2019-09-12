@@ -15,7 +15,7 @@ parser.add_argument("--nThreads", dest="nThreads",       action='store', default
 parser.add_argument("--inFile", action='store', default=None, help="Run on which file?")
 options = parser.parse_args()
 
-import TopEFT.Tools.logger as logger
+import Analysis.Tools.logger as logger
 logger = logger.get_logger(options.logLevel, logFile = None )
 
 
