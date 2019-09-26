@@ -193,9 +193,19 @@ def getAllBinNames(cardFile):
     with open(cardFile) as f:
         for line in f:
             if len(line.split())==0: continue
-            if line.split()[0] == "bin":
+            if line.split()[0].lower() == "bin":
                 binList = line.split()[1:]
                 return binList
+
+def getAllBinLabels(cardFile):
+    binLabels = []
+    with open(cardFile) as f:
+        for line in f:
+            if line.startswith("# Bin"):
+                binLabels.append(line.split(": ")[1].split("\n")[0])
+            elif line.startswith("#Muted"):
+                binLabels.append(line.split(": ")[2].split("\n")[0])
+    return binLabels
 
 def getAllProcesses(cardFile):
     i           = 0
