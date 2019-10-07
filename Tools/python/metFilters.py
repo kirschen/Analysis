@@ -14,8 +14,8 @@ def getFilterCut( year, isData=False, ignoreJSON=False, isFastSim=False, skipBad
             filters        += [ "Flag_BadPFMuonFilter" ]                      # Bad PF Muon Filter
         if not skipBadChargedCandidate: #recommended to skip for now!!
             filters        += [ "Flag_BadChargedCandidateFilter" ]            # Bad Charged Hadron Filter
-        #if isData:
-        #    filters        += [ "Flag_eeBadScFilter" ]                        # ee badSC noise filter (data only)
+        if isData:
+            filters        += [ "Flag_eeBadScFilter" ]                        # ee badSC noise filter (data only)
 
     elif year == 2017:
         filters             = [ "Flag_goodVertices" ]                         # primary vertex filter
@@ -30,8 +30,8 @@ def getFilterCut( year, isData=False, ignoreJSON=False, isFastSim=False, skipBad
             filters        += [ "Flag_BadPFMuonFilter" ]                      # Bad PF Muon Filter
         if not skipBadChargedCandidate: #recommended to skip for now!!
             filters        += [ "Flag_BadChargedCandidateFilter" ]            # Bad Charged Hadron Filter
-        #if isData:
-        #    filters        += [ "Flag_eeBadScFilter" ]                        # ee badSC noise filter (data only)
+        if isData:
+            filters        += [ "Flag_eeBadScFilter" ]                        # ee badSC noise filter (data only)
         if isFastSim:
             filters        += ["Flag_ecalBadCalibFilter"]
         else:
@@ -50,8 +50,8 @@ def getFilterCut( year, isData=False, ignoreJSON=False, isFastSim=False, skipBad
             filters        += [ "Flag_BadPFMuonFilter" ]                      # Bad PF Muon Filter
         if not skipBadChargedCandidate: #recommended to skip for now!!
             filters        += [ "Flag_BadChargedCandidateFilter" ]            # Bad Charged Hadron Filter
-        #if isData:
-        #    filters        += [ "Flag_eeBadScFilter" ]                        # ee badSC noise filter (data only)
+        if isData:
+            filters        += [ "Flag_eeBadScFilter" ]                        # ee badSC noise filter (data only)
         if isFastSim:
             filters        += ["Flag_ecalBadCalibFilter"]
         else:
