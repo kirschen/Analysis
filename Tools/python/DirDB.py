@@ -18,8 +18,11 @@ class DirDB:
         Will create the directory if it doesn't exist 
         '''
         self.directory = directory
-        if not os.path.isdir( self.directory ):
-            os.makedirs( self.directory ) 
+        try: # errors can appear in parallel processing
+            if not os.path.isdir( self.directory ):
+                os.makedirs( self.directory )
+        except:
+            pass
 
     def __get_filename( self, key ):
         filename = str(hash(key))
@@ -49,8 +52,12 @@ class DirDB:
     def add(self, key, data, overwrite=False):
 
         filename = os.path.join( self.directory, self.__get_filename(key)) 
-        if not os.path.isdir(os.path.dirname( filename )):
-            os.makedirs( os.path.dirname( filename ) )
+        try: # errors can appear in parallel processing
+            if not os.path.isdir(os.path.dirname( filename )):
+                os.makedirs( os.path.dirname( filename ) )
+        except:
+            pass
+
         if not overwrite:
             if os.path.exists( filename ):
                 logger.warning( "Already found key '%r'. Do not store data.", key )
