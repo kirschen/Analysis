@@ -110,8 +110,19 @@ class MetSignificance:
 
 if __name__ == "__main__":
 
+    year = 2016
+    mc   = True
+
     import os, uuid
-    from Samples.nanoAOD.Summer16_private_legacy_v1 import TTSingleLep_pow
+    if year == 2016:
+        if mc: from Samples.nanoAOD.Summer16_private_legacy_v1 import TTSingleLep_pow               as sample
+        else:  from Samples.nanoAOD.Run2016_17Jul2018_private  import DoubleMuon_Run2016C_17Jul2018 as sample
+    elif year == 2017:
+        if mc: from Samples.nanoAOD.Fall17_private_legacy_v1   import TTSingleLep_pow               as sample
+        else:  from Samples.nanoAOD.Run2017_31Mar2018_private  import DoubleMuon_Run2017C_31Mar2018 as sample
+    elif year == 2018:
+        if mc: from Samples.nanoAOD.Autumn18_private_legacy_v1 import TTSingleLep_pow               as sample
+        else:  from Samples.nanoAOD.Run2018_17Sep2018_private  import DoubleMuon_Run2018C_17Sep2018 as sample
 
     twoJetCond             = "(Sum$(Jet_pt>=29&&abs(Jet_eta)<=2.41)>=2)"
     semilepCond_ele        = "(Sum$(Electron_pt>=34&&abs(Electron_eta)<=2.11&&Electron_cutBased>=4)>=1)"
@@ -121,9 +132,8 @@ if __name__ == "__main__":
 
     skimConds              = [semilepCond, gammaCond, twoJetCond]
     output_directory       = os.path.join( '/tmp/%s'%os.environ['USER'], str(uuid.uuid4()) )
-    sample                 = TTSingleLep_pow
     sample.reduceFiles( factor = 200 )
 
-    MetSig = MetSignificance( sample, 2016, output_directory )
+    MetSig = MetSignificance( sample, year, output_directory )
     MetSig( "&&".join(skimConds) )
     newfiles = MetSig.getNewSampleFilenames()
