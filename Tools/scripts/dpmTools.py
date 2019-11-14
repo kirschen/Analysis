@@ -2,12 +2,29 @@
 import os, sys
 import subprocess
 
-redir = "root://hephyse.oeaw.ac.at/"
+redir       = "root://hephyse.oeaw.ac.at/"
+hostname    = os.getenv("HOSTNAME")
+runOnLxplus = "cern" in hostname
 
-def getDPMFiles( path ):
+
+def checkRootFile( file ):
+    logger.info("Checking root file: %s"%file)
+    from Analysis.Tools.helpers import checkRootFile, deepCheckRootFile, deepCheckWeight
+    valid = checkRootFile( file, checkForObjects=["Events"] ) and deepCheckRootFile( file ) and deepCheckWeight( file )
+    if valid:
+        logger.info("Check done!")
+    else:
+        logger.info("Corrupt root file: %s"%file)
+    return valid
+
+def getDPMFiles( path, fromLxPlus=False ):
     """ get all files in dpm directory
     """
-    p = subprocess.Popen( ["dpns-ls %s" %path], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
+    if runOnLxplus:
+        cmd = "xrdfs %s ls %s" %(redir,path)
+    else:
+        cmd = "dpns-ls %s"%path
+    p = subprocess.Popen( [cmd], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
     return [ item.rstrip("\n") for item in p.stdout.readlines() ]
 
 def convertToPathList( paths, local=False ):
@@ -71,7 +88,11 @@ def removeDPMFiles( path ):
 
     for rmPath in rmPathList:
         logger.info( "Removing %s"%rmPath )
-        os.system( "/usr/bin/rfrm -rf %s"%rmPath )
+        if runOnLxplus:
+            try:    os.system( "xrdfs %s rmdir %s" %(redir,rmPath) )
+            except: os.system( "xrdfs %s rm %s" %(redir,rmPath) )
+        else:
+            os.system( "/usr/bin/rfrm -rf %s"%rmPath )
 
 def checkDPMDirExists( path ):
 
@@ -80,7 +101,7 @@ def checkDPMDirExists( path ):
         sys.exit(1)
 
     checkDir  = getDPMFiles( path )
-    dirExists = len( [ item for item in checkDir if not "No such file or directory" in item ] ) > 0
+    dirExists = len( [ item for item in checkDir if not "No such file or directory" in item and not "error" in item ] ) > 0
     return dirExists
 
 def makeDPMDir( path ):
@@ -94,7 +115,11 @@ def makeDPMDir( path ):
         if not checkDPMDirExists( motherPath ):
             makeDPMDir( motherPath )
         logger.info( "Creating directory: %s"%path )
-        os.system( "dpns-mkdir %s"%path )        
+        if runOnLxplus:
+            cmd = "xrdfs %s mkdir %s" %(redir,path)
+        else:
+            cmd = "dpns-mkdir %s"%path
+        os.system( cmd )        
 
 def isFile( path ):
     """ check if path is a file
@@ -102,7 +127,7 @@ def isFile( path ):
 
     return "." in path.split("/")[-1]
 
-def copyDPMFiles( fromPath, toPath, toLocal=False, fromLocal=False ):
+def copyDPMFiles( fromPath, toPath, toLocal=False, fromLocal=False, rootFileCheck=False ):
     """ copy files or directories including subdirectories
     """
 
@@ -117,6 +142,22 @@ def copyDPMFiles( fromPath, toPath, toLocal=False, fromLocal=False ):
             logger.info( "Copying %s to %s"%( file, toPath ) )
             cmd = "xrdcp -r %s%s %s%s"%(redir if not fromLocal else "", file, redir if not toLocal else "", toPath)
             os.system( cmd )
+
+            if rootFileCheck:
+                corrupt = True
+                for i in range(10):
+                    if checkRootFile( "%s%s/%s"%(redir if not toLocal else "", toPath, file.split("/")[-1]) ):
+                        corrupt = False
+                        break
+                    # remove files if corrupt (dont do -rf, otherwise it always copies)
+                    logger.info("Corrupt root file! Removing file and trying again!")
+                    if toLocal: os.system("rm %s/%s"%(toPath,file.split("/")[-1]))
+                    else:       removeDPMFiles( "%s/%s"%(toPath,file.split("/")[-1]) )
+                    os.system( cmd ) #try again if corrupt
+                if corrupt:
+                    if toLocal: os.system("rm %s/%s"%(toPath,file.split("/")[-1]))
+                    else:       removeDPMFiles( "%s/%s"%(toPath,file.split("/")[-1]) )
+
         else:
             subdir          = file.split("/")[-1]
             subFromPath     = os.path.join( file,   "*" )
@@ -135,12 +176,13 @@ if __name__ == "__main__":
         '''
         import argparse
         argParser = argparse.ArgumentParser(description = "Argument parser for nanoPostProcessing")
-        argParser.add_argument('--ls',        action='store',      type=str,          help="list dpm path content")
-        argParser.add_argument('--cp',        action='store',      type=str, nargs=2, help="copy dpm files")
-        argParser.add_argument('--fromLocal', action='store_true',                    help="copy from local directory")
-        argParser.add_argument('--toLocal',   action='store_true',                    help="copy to local directory")
-        argParser.add_argument('--mkdir',     action='store',      type=str,          help="make dpm dir")
-        argParser.add_argument('--rm',        action='store',      type=str,          help="dpm path to remove")
+        argParser.add_argument('--ls',            action='store',      type=str,          help="list dpm path content")
+        argParser.add_argument('--cp',            action='store',      type=str, nargs=2, help="copy dpm files")
+        argParser.add_argument('--fromLocal',     action='store_true',                    help="copy from local directory")
+        argParser.add_argument('--toLocal',       action='store_true',                    help="copy to local directory")
+        argParser.add_argument('--mkdir',         action='store',      type=str,          help="make dpm dir")
+        argParser.add_argument('--rm',            action='store',      type=str,          help="dpm path to remove")
+        argParser.add_argument('--checkRootFile', action='store_true',                    help="check root file if corrupt")
         return argParser
 
     args = get_parser().parse_args()
@@ -173,7 +215,7 @@ if __name__ == "__main__":
         if not toPath.startswith("/dpm/") and not args.toLocal:
             toPath = os.path.join( dpm_directory, toPath )
 
-        copyDPMFiles( fromPath, toPath, toLocal=args.toLocal, fromLocal=args.fromLocal )
+        copyDPMFiles( fromPath, toPath, toLocal=args.toLocal, fromLocal=args.fromLocal, rootFileCheck=args.checkRootFile )
 
     elif args.mkdir:
         if not args.mkdir.startswith("/dpm/"):
