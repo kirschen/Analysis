@@ -21,18 +21,6 @@ def getAnyObjFromFile( fname, hname ):
     return obj
 
 
-def getRandList( n ):
-    l = range(n)
-    random.shuffle( l )
-    return l
-
-def getObsName(v):
-    return v.split('/')[0]
-
-def getObsType(v):
-    if v.count('/'): return v.split('/')[1]
-    return 'F'
-
 def getEList( chain, cut, newname="eListTMP" ):
     chain.Draw(">>eListTMP_t", cut)
     elistTMP_t = ROOT.gROOT.Get("eListTMP_t")
