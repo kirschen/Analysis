@@ -13,8 +13,9 @@ from array                 import array
 from root_numpy            import ROOT_VERSION
 from operator              import attrgetter
 
-# Analysis
+# Analysis.TMVA
 from Analysis.TMVA.helpers  import *
+from Analysis.TMVA.defaults import default_methods, default_factory_settings
 
 # RootTools
 from RootTools.core.standard import *
@@ -29,31 +30,7 @@ else:
 
 # example methods
 
-default_factory_settings = [ "!V", "!Silent", "Color", "DrawProgressBar", "Transformations=I;D;P;G,D", "AnalysisType=Classification" ]
-
-example_methods = {
-    "cutOpt": { 
-        "type"                : ROOT.TMVA.Types.kCuts,
-        "name"                : "cutOpt",
-        "color"               : ROOT.kRed,
-        "options"             : ["!H","!V","VarTransform=None","CreateMVAPdfs=True","FitMethod=GA","EffMethod=EffSel","VarProp=NotEnforced","CutRangeMin=-1","CutRangeMax=-1"],
-        },
-    "MLP":{
-        "type"                : ROOT.TMVA.Types.kMLP,
-        "name"                : "MLP21",
-        "layers"              : [1],
-        "color"               : ROOT.kRed,
-        "options"             : ["!H","!V","VarTransform=Norm,Deco","NeuronType=sigmoid","NCycles=10000","TrainingMethod=BP","LearningRate=0.03", "DecayRate=0.01","Sampling=0.3","SamplingEpoch=0.8","ConvergenceTests=1","CreateMVAPdfs=True","TestRate=10" ],
-        },
-    "BDT":{
-        "type"                : ROOT.TMVA.Types.kBDT,
-        "name"                : "BDT",
-        "color"               : ROOT.kBlue,
-        "options"             : ["!H","!V","NTrees=1000","BoostType=Grad","Shrinkage=0.20","UseBaggedBoost","GradBaggingFraction=0.5","SeparationType=GiniIndex","nCuts=500","PruneMethod=NoPruning","MaxDepth=5"]
-        },
-}
-
-class Wrapper:
+class Trainer:
     def __init__( self, signal, backgrounds, mva_variables, output_directory, plot_directory, label="MVA", fractionTraining=0.5):
 
         # Samples
@@ -63,19 +40,21 @@ class Wrapper:
 
         self.label               = label
         self.fractionTraining    = float(fractionTraining)
-        self.setup               = {}
         self.read_variables      = []
         self.mva_variables       = mva_variables
+
+        # Need to keep track of sequence!
+        self.mva_variable_names  = mva_variables.keys() 
+        self.mva_variable_names  .sort() 
+
         self.calc_variables      = []
-        self.output_directory    = os.path.join( output_directory if output_directory else mva_directory, self.label )
+        self.output_directory    = os.path.join( output_directory, self.label )
         self.dataFile            = os.path.join( self.output_directory, self.label + ".root" )
         self.mvaOutFile          = os.path.join( self.output_directory, self.label + "_MVAOutput.root" )
-        self.mvaWeightDir        = "weights"
-        self.configFile          = self.dataFile.replace(".root", ".pkl")
+        #self.mvaWeightDir        = os.path.join( self.output_directory, "weights" )
+        self.mvaWeightDir        = "weights" #os.path.join( self.output_directory, "weights" )
         self.max_nEvents_trainings = None
         self.plot_directory      = os.path.join( plot_directory, "MVA", self.label )
-
-        self.tree                = None
 
         randomSeed = 1
         random.seed( randomSeed )
@@ -178,7 +157,7 @@ class Wrapper:
         # Create a maker. Maker class will be compiled. 
         maker = TreeMaker(
             sequence  = [ filler ],
-            variables = map(TreeVariable.fromString, ["isTraining/I", "isSignal/I"] + ["%s/F"%var for var in self.mva_variables.keys()] ), 
+            variables = map(TreeVariable.fromString, ["isTraining/I", "isSignal/I"] + ["%s/F"%var for var in self.mva_variable_names] ), 
             treeName = "Events"
             )
 
@@ -221,33 +200,67 @@ class Wrapper:
         self.trainingAndTestSample = Sample.fromFiles("TrainingAndTestSample", files = [self.dataFile])
         return self.trainingAndTestSample
 
-    def loadDatasetForTMVA( self ):
-
-        if not self.tree:
-            self.tree             = getAnyObjFromFile( self.dataFile, 'Events' )
-
-        return { 'tree':self.tree,
-               }
-
-
     def addMethod( self, method ):
         # for MLP add HiddenLayer option that is of the form N,x,y,z,... where N is the number of variables and x,y,z the "layers" key
         if method["type"]==ROOT.TMVA.Types.kMLP:
-            method["options"].append( "HiddenLayers=%s" % ",".join( map( str, [len( self.mva_variables.keys() )] + method["layers"] )) )
+            method["options"].append( "HiddenLayers=%s" % ",".join( map( str, [len( self.mva_variable_names )] + method["layers"] )) )
 
         if not hasattr( self, "methods" ):
             self.methods = []
 
         self.methods.append( method )
 
+#    def evaluate(self, names=None, **kwargs):
+#        # all methods we evaluate for
+#
+#        ret_scalar = False
+#        if type(names)==type(""):
+#            names = [ names ]
+#            ret_scalar = True
+#        elif names is None:
+#            names = [ method['name'] for method in self.methods ]
+#        else:
+#            names = names 
+#
+#        if not hasattr( self, "reader" ):
+#
+#            import ctypes
+#            p_c_float  = ctypes.c_float  * 1
+#            p_c_double = ctypes.c_double * 1
+#
+#            defaultObs = { "F":p_c_float(0.), "D":p_c_double(0.), "I":ctypes.c_int(0) }
+#
+#            self.reader      = ROOT.TMVA.Reader()
+#            for key in self.mva_variable_names:
+#                self.reader.AddVariable(key, defaultObs["F"])
+#
+#            for method in self.methods:
+#                self.reader.BookMVA( method["name"], os.path.join( self.mvaWeightDir, "TMVAClassification_%s.weights.xml" % method["name"] ) )
+#
+#            self.var_proxies = {}
+#            self.mva_reader_inputs = ROOT.std.vector('float')()
+#
+#        self.mva_reader_inputs.clear()
+#        for var in self.mva_variable_names:
+#            self.mva_reader_inputs.push_back( kwargs[var] )
+#        if ret_scalar: 
+#            return self.reader.EvaluateMVA( self.mva_reader_inputs, names[0])
+#        else:
+#            return [ self.reader.EvaluateMVA( self.mva_reader_inputs, name_) for name_ in names ]
+#
+#    def __del__( self ):
+#        if hasattr( self, "reader" ):
+#            self.reader.IsA().Destructor( self.reader ) 
+#        if hasattr( self, "factory" ):
+#            self.factory.IsA().Destructor( self.factory ) 
 
     def trainMVA( self, factory_settings = default_factory_settings):
 
-        data = self.loadDatasetForTMVA()
+        data_tree = getAnyObjFromFile( self.dataFile, 'Events' )
         rootGDirectory = ROOT.gDirectory.CurrentDirectory().GetName()+":/"
 
         ROOT.TMVA.Tools.Instance()
-        ROOT.TMVA.gConfig().GetIONames().fWeightFileDir = self.mvaWeightDir
+        ROOT.TMVA.gConfig().GetIONames().fWeightFileDir = self.mvaWeightDir 
         ROOT.TMVA.gConfig().GetVariablePlotting().fNbinsXOfROCCurve = 200
         ROOT.TMVA.gConfig().GetVariablePlotting().fMaxNumOfAllowedVariablesForScatterPlots = 2
         
@@ -257,13 +270,13 @@ class Wrapper:
 
         dataloader = ROOT.TMVA.DataLoader('.') if ROOT_VERSION >= '6.07/04' else factory
 
-        for key in self.mva_variables.keys():
+        for key in self.mva_variable_names:
             dataloader.AddVariable(key, 'F')
 
-        bkgTestTree  = data["tree"].CopyTree("isTraining==0&&isSignal==0")
-        sigTestTree  = data["tree"].CopyTree("isTraining==0&&isSignal==1")
-        bkgTrainTree = data["tree"].CopyTree("isTraining==1&&isSignal==0")
-        sigTrainTree = data["tree"].CopyTree("isTraining==1&&isSignal==1")
+        bkgTestTree  = data_tree.CopyTree("isTraining==0&&isSignal==0")
+        sigTestTree  = data_tree.CopyTree("isTraining==0&&isSignal==1")
+        bkgTrainTree = data_tree.CopyTree("isTraining==1&&isSignal==0")
+        sigTrainTree = data_tree.CopyTree("isTraining==1&&isSignal==1")
         dataloader.AddBackgroundTree( bkgTrainTree, 1.0, "Training" )
         dataloader.AddBackgroundTree( bkgTestTree,  1.0, "Test" )
         dataloader.AddSignalTree(     sigTrainTree, 1.0, "Training" )
@@ -279,6 +292,9 @@ class Wrapper:
         factory.EvaluateAllMethods()
 
         fout.Close()
+
+        data_tree.IsA().Destructor(data_tree)
+        del data_tree
 
     def plotEvaluation( self ):
 
