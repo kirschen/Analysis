@@ -131,6 +131,7 @@ class CombineResults:
         return { key:val for key, val in filterDict.items() if key==var}
             
     def __filterDict( self, filterDict, bin=None, estimate=None, nuisance=None, systOnly=False ):
+        # remove estimate sub dictionaries
         filterDict = self.__filter( filterDict, var=bin )
         if not isinstance( filterDict, dict ): return filterDict
         for b, b_dict in filterDict.items():
@@ -144,8 +145,42 @@ class CombineResults:
                         del filterDict[b][e][n]
         return filterDict
 
-    def __getConstrain( self, nuisance ):
+    def __reduceHistogram( self, fromHisto, plotBins ):
+        # remove single bins from a histogram
+        newH = ROOT.TH1F( str(uuid.uuid4()), str(uuid.uuid4()), len(plotBins), 0, len(plotBins))
+        j = 0
+        for i in range( fromHisto.GetNbinsX() ):
+            if i not in plotBins: continue
+            newH.SetBinContent( j+1, fromHisto.GetBinContent(i+1) )
+            newH.SetBinError(   j+1, fromHisto.GetBinError(i+1)   )
+            j += 1
+        self.__copyHistoSettings( fromHist=fromHisto, toHist=newH, plotBins=plotBins )
+        return newH
 
+    def __copyHistoSettings( self, fromHist, toHist, plotBins=None ):
+        # copy all our settings of a histogram when cloning it
+        for var in [attr for attr in dir(fromHist) if not callable(getattr(fromHist, attr)) and not attr.startswith("__")]:
+            try: setattr( toHist, var, getattr( h, var ) )
+            except: pass
+        try:    toHist.style = fromHist.style
+        except: pass
+        try:    toHist.legendOption = fromHist.legendOption
+        except: pass
+        try:    toHist.LabelsOption = fromHist.LabelsOption
+        except: pass
+        try:    toHist.legendText = fromHist.legendText
+        except: pass
+
+        j = 0
+        for i in range( fromHist.GetNbinsX() ):
+            # make that more dynamic FIXME
+            if plotBins and i not in plotBins: continue
+            toHist.GetXaxis().SetBinLabel( j+1, fromHist.GetXaxis().GetBinLabel( i+1 ) )
+            toHist.LabelsOption("v","X")
+            j += 1
+
+
+    def __getConstrain( self, nuisance ):
         # just run over it once, safe the entries in a dictionary, use it if you need it
         if self.constrain and nuisance in self.constrain.keys():
             return self.constrain[nuisance]
@@ -212,6 +247,7 @@ class CombineResults:
 
 
     def __getSubKey( self, plotBins=None ):
+        # that was a bit more complicated before, now it's kinda useless
         subkey = "all"
         if plotBins: subkey = "_".join(map(str,plotBins))
         return subkey
@@ -229,7 +265,7 @@ class CombineResults:
 
         y, yup, ydown = 0, 0, 0
         for p in processes:
-            yproc  = yields[p].val if p in yields.keys() else 0 #FIXME
+            yproc  = yields[p].val if p in yields.keys() else 0 # yield is 0 when it is not in the results? or throw an error? FIXME
             uproc  = unc[p][nuisance]
             y     += yproc
             yup   += yproc*(1+uproc)
@@ -237,6 +273,8 @@ class CombineResults:
         return {"up":yup, "down":ydown, "relUp":yup/y if y else 0, "relDown":ydown/y if y else 0, "yield":y}
 
     def getBinList( self, unique=True ):
+        # get either the bin names for each process according to the cardfile ( Bin0 Bin0 Bin0 ... Bin1 Bin1 ...)
+        # or only the unique ones (Bin0 Bin1 ...)
         # ordered list of bins
         # return safed binList if available
         if self.binList:
@@ -264,9 +302,16 @@ class CombineResults:
 
         return self.binList
 
-    def getBinLabels( self ):
+    def getBinLabels( self, labelFormater=None ):
+        # labelFormater applies a function to the labels to format is accordingly
+
         # return safed binList if available
-        if self.binLabels: return self.binLabels
+        if self.binLabels:
+            if labelFormater:
+                binLabels = map( labelFormater, self.binLabels )
+                return binLabels
+            else:
+                return self.binLabels
 
         binLabels = []
         with open( self.cardFile ) as f:
@@ -275,11 +320,16 @@ class CombineResults:
                     binLabels.append(line.split(": ")[1].split("\n")[0])
                 elif line.startswith("#Muted"):
                     binLabels.append(line.split(": ")[2].split("\n")[0])
+
         self.binLabels = binLabels
+
+        if labelFormater:
+            return map( labelFormater, binLabels )
 
         return self.binLabels
 
     def getNuisancesList( self, systOnly=False ):
+        # get a list of nuisances in the cardfile
 
         if self.nuisances:
             if systOnly:
@@ -309,6 +359,8 @@ class CombineResults:
         return self.nuisances
 
     def getProcessList( self, unique=True ):
+        # get either the process names for each bin according to the cardfile ( MC1 MC2 MC3 ... MC1 MC2 ...)
+        # or only the unique ones (MC1 MC2 ...)
         # ordered list of processes over all bins
         # return safed binList if available
         if self.processList:
@@ -335,6 +387,8 @@ class CombineResults:
         return self.processList
 
     def getProcessesPerBin( self, bin=None ):
+        # get a dictionary with a list of processes for each bin
+
         # return safed binList if available
         if self.processes:
             if bin: return {bin:self.processes[bin]}
@@ -468,7 +522,7 @@ class CombineResults:
 
         return nuisanceHistos
 
-    def getRegionHistos( self, postFit=False, plotBins=None, nuisances=None ):
+    def getRegionHistos( self, postFit=False, plotBins=None, nuisances=None, labelFormater=None ):
 
         if not self.rootFile:
             raise ValueError( "Root file of fit result not found! Running in limited mode, thus cannot get the object needed!" )
@@ -515,6 +569,19 @@ class CombineResults:
             if isinstance( nuisances, str ): nuisances = [nuisances]
             hists.update( self.getNuisanceHistos( postFit=postFit, plotBins=None, nuisances=nuisances ) )
 
+        labels = self.getBinLabels( labelFormater=labelFormater )
+        for h_key, h in hists.iteritems():
+            if nuisances and h_key in nuisances:
+                for i in range(h["up"].GetNbinsX()):
+                    h["up"].GetXaxis().SetBinLabel( i+1, labels[i] )
+                    h["down"].GetXaxis().SetBinLabel( i+1, labels[i] )
+                h["up"].LabelsOption("v","X") #"vu" for 45 degree labels
+                h["down"].LabelsOption("v","X") #"vu" for 45 degree labels
+            else:
+                for i in range(h.GetNbinsX()):
+                    h.GetXaxis().SetBinLabel( i+1, labels[i] )
+                h.LabelsOption("v","X") #"vu" for 45 degree labels
+
         # remove single bins from region plots
         if plotBins:
             for i_h, (h_key,h) in enumerate(hists.iteritems()):
@@ -528,48 +595,21 @@ class CombineResults:
 
         return hists
 
-    def __reduceHistogram( self, fromHisto, plotBins ):
-        newH = ROOT.TH1F( str(uuid.uuid4()), str(uuid.uuid4()), len(plotBins), 0, len(plotBins))
-        j = 0
-        for i in range( fromHisto.GetNbinsX() ):
-            if i not in plotBins: continue
-            newH.SetBinContent( j+1, fromHisto.GetBinContent(i+1) )
-            newH.SetBinError(   j+1, fromHisto.GetBinError(i+1)   )
-            j += 1
-        self.__copyHistoSettings( fromHist=fromHisto, toHist=newH, plotBins=plotBins )
-        return newH
-
-    def __copyHistoSettings( self, fromHist, toHist, plotBins=None ):
-        for var in [attr for attr in dir(fromHist) if not callable(getattr(fromHist, attr)) and not attr.startswith("__")]:
-            try: setattr( toHist, var, getattr( h, var ) )
-            except: pass
-        try:    toHist.style = fromHist.style
-        except: pass
-        try:    toHist.legendOption = fromHist.legendOption
-        except: pass
-        try:    toHist.LabelsOption = fromHist.LabelsOption
-        except: pass
-        try:    toHist.legendText = fromHist.legendText
-        except: pass
-
-        j = 0
-        for i in range( fromHist.GetNbinsX() ):
-            # make that more dynamic FIXME
-            if plotBins and i not in plotBins: continue
-            toHist.GetXaxis().SetBinLabel( j+1, fromHist.GetXaxis().GetBinLabel( i+1 ) )
-            toHist.LabelsOption("v","X") #"vu" for 45 degree labels
-            j += 1
-
-
     def getRegionHistoList( self, regionHistos, processes=None, noData=False, sorted=False ):
         # get the list of histograms and the ratio list for plotting a region plot
 
         for p in processes:
             if not p in regionHistos.keys():
-                raise ValueError( "No histogram provided for process %s!"%p )
+                # some histograms are 0, still should be in the legend
+                logger.info("Histogram for %s not found! Creating one and setting it to 0! Continuing..."%p)
+                continue
+                regionHistos[p] = regionHistos["signal"].Clone()
+                regionHistos[p].Scale(0.)
+                regionHistos[p].SetName(p)
+    
 
         nuisances    = self.getNuisancesList( systOnly=False )
-        binProcesses = [ p for p in regionHistos.keys() if (not processes or (processes and p in processes)) and not "total" in p and p not in nuisances ] 
+        binProcesses = self.getProcessesPerBin()
         ratioHistos  = []
         i_n          = 0
 
@@ -578,20 +618,26 @@ class CombineResults:
             for i in range( regionHistos["signal"].GetNbinsX() ):
                 proc_list = []
 
-                for p in binProcesses:
+                for p in binProcesses["Bin%i"%i]:
 
-                    tmp_hist = regionHistos[p].Clone( p + "_Bin%i_%s"%(i,uuid.uuid4()) )
-                    tmp_hist.Scale(0.)
-                    tmp_hist.SetBinContent( i+1, regionHistos[p].GetBinContent(i+1) )
-
-                    self.__copyHistoSettings( fromHist=regionHistos[p], toHist=tmp_hist, plotBins=None )
+                    if p in regionHistos.keys():
+                        # set only one bin != 0
+                        tmp = regionHistos[p].Clone( p + "_Bin%i_%s"%(i,uuid.uuid4()) )
+                        tmp.Scale(0.)
+                        tmp.SetBinContent( i+1, regionHistos[p].GetBinContent(i+1) )
+                        self.__copyHistoSettings( fromHist=regionHistos[p], toHist=tmp, plotBins=None )
+                    else:
+                        tmp = regionHistos["signal"].Clone( p + "_Bin%i_%s"%(i,uuid.uuid4()) )
+                        tmp.Scale(0.)
 
                     if i != 0:
-                        try:    del tmp_hist.legendText
+                        # remove all but the first histogram bin from the legend
+                        try:    del tmp.legendText
                         except: pass
 
-                    proc_list.append(tmp_hist)
+                    proc_list.append(tmp)
 
+                # sort each bin
                 proc_list.sort( key=lambda h: -h.Integral() )
                 histoList[0] += copy.copy(proc_list)
         else:
@@ -606,7 +652,8 @@ class CombineResults:
 
         # add nuisance histos at last
         for n in nuisances:
-            if n in regionHistos.keys():
+            if n in regionHistos.keys() and isinstance( regionHistos[n], dict ):
+                print n
                 histoList   += [ [regionHistos[n]["up"]], [regionHistos[n]["down"]] ]
                 ratioHistos += [ ((i_n)*2,0),((i_n)*2+1,0) ]
                 i_n         += 1
@@ -675,13 +722,11 @@ class CombineResults:
 
         shutil.copyfile( combineDirname+"/impacts.pdf", "%s/%s.pdf"%(self.plotDirectory, plotName) )
         if printPNG:
-            os.system("convert %s/%s.pdf %s/%s.png"%( self.plotDirectory, plotName, self.plotDirectory, plotName) )
+            os.system("convert -trim %s/%s.pdf -density 150 -verbose -quality 100 -flatten -sharpen 0x1.0 -geometry 1600x1600 %s/%s.png"%( self.plotDirectory, plotName, self.plotDirectory, plotName) )
             copyIndexPHP( self.plotDirectory )
 
+        logger.info("Impact plot created at %s/%s.pdf"%(self.plotDirectory, plotName) )
         shutil.rmtree( combineDirname )
-
-
-    #def getNuisanceHisto( self, postFit=False, plotBins=None ):
 
     def getCorrelationHisto( self, systOnly=None ):
 
@@ -700,20 +745,24 @@ class CombineResults:
             return self.correlationHisto
 
         fit = self.__getFitObject( key="fit_b" if self.bkgOnly else "fit_s" )
-        self.correlationHisto = fit.correlationHist()
-        self.correlationHisto.LabelsOption("v","X")
+        corrhist = fit.correlationHist()
+
+        # bit of formating
+        corrhist.GetZaxis().SetRangeUser(-1,1)
+        corrhist.LabelsOption("v","X")
+
+        self.correlationHisto = corrhist
 
         if systOnly:
             nuisSyst = self.getNuisancesList( systOnly=True )
             nuisAll  = self.getNuisancesList( systOnly=False )
-            hist = self.correlationHisto.Clone()
+            hist = corrhist.Clone()
             hist.GetXaxis().SetRangeUser(0,len(nuisSyst))
             hist.GetYaxis().SetRangeUser(len(nuisAll)-len(nuisSyst),len(nuisAll))
-            hist.LabelsOption("v","X")
             return hist
         return self.correlationHisto
 
-    def getCovarianceHisto( self, postFit=False ):
+    def getCovarianceHisto( self, labelFormater=None, postFit=False ):
         # get the TH2D covariance matrix plot
 
         if not self.rootFile:
@@ -730,6 +779,16 @@ class CombineResults:
 
         fit = self.__getFitObject( key=dirName )
         self.covarianceHistos[key] = copy.copy( fit.Get("overall_total_covar") )
+
+        # normalize
+        self.covarianceHistos[key].Scale(1./self.covarianceHistos[key].GetMaximum())
+
+        # set labels
+        self.covarianceHistos[key].LabelsOption("v","X")
+        labels = self.getBinLabels( labelFormater=labelFormater )
+        for i in range(self.covarianceHistos[key].GetNbinsY()):
+            self.covarianceHistos[key].GetYaxis().SetBinLabel( i+1, labels[i] )
+            self.covarianceHistos[key].GetXaxis().SetBinLabel( i+1, labels[i] )
 
         return self.covarianceHistos[key]
 
