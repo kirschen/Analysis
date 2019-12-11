@@ -43,16 +43,46 @@ def photonFromTopDecay( parentList ):
     if parentList[0] == 6:  return False  # photon from top
     return True                           # photon from top decay
 
+def photonFromLepton( parentList ):
+    if not parentList:               return False  # empty list
+    if hasMesonMother( parentList ): return False
+
+    parentList = map( abs, parentList )
+    parentList = filter( lambda pdg: pdg != 22, parentList )
+
+    if not parentList:                                     return False # empty list
+    if not any( pdg in [11,13,15] for pdg in parentList ): return False # lepton in parent list
+    if not parentList[0] in [11,13,15]:                    return False # photon radiated from the lepteon
+    return True                           # photon from top decay
+
 def getPhotonCategory( g, genparts ):
 
     # safe time if g is no photon or electron
     if not g or abs(g['pdgId']) not in [11,22]: return 3
 
-    isIsolated = isIsolatedPhoton( g, genparts, coneSize=0.2, ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] )
+#    isIsolated = isIsolatedPhoton( g, genparts, coneSize=0.2, ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] )
     hasMeson   = hasMesonMother( getParentIds( g, genparts ) )
 
-    if abs(g['pdgId']) == 22 and isIsolated and not hasMeson: return 0        # type 0: genuine photon:   isolated photon with no meson in parent list
-    if abs(g['pdgId']) == 22 and isIsolated and hasMeson:     return 1        # type 1: hadronic photon:  isolated photon with meson in parent list
-    if abs(g['pdgId']) == 11 and not hasMeson:                return 2        # type 2: mis-Id electron: electron with deltaR and meson-mother requirement from genuine photon
-#    if abs(g['pdgId']) == 11 and isIsolated and not hasMeson: return 2        # type 2: mis-Id electron: electron with deltaR and meson-mother requirement from genuine photon
+    if abs(g['pdgId']) == 22 and not hasMeson: return 0  # type 0: genuine photon:   photon with no meson in parent list
+    if abs(g['pdgId']) == 22 and hasMeson:     return 1  # type 1: hadronic photon:  photon with meson in parent list
+    if abs(g['pdgId']) == 11 and not hasMeson: return 2  # type 2: mis-Id electron:  electron with meson-mother requirement from genuine photon
     return 3
+
+#    if abs(g['pdgId']) == 22 and isIsolated and hasMeson:     return 1        # type 1: hadronic photon:  isolated photon with meson in parent list
+#    if abs(g['pdgId']) == 11 and isIsolated and not hasMeson: return 2       # type 2: mis-Id electron: electron with deltaR and meson-mother requirement from genuine photon
+
+def hasLeptonMother( g, genparts ):
+    if not g: return 0
+    parentList = getParentIds( g, genparts )
+    return int( photonFromLepton( parentList ) )
+
+def getPhotonMother( g, genparts ):
+    if not g: return -1
+
+    parentList = getParentIds( g, genparts )
+    if not parentList: return -1
+    parentList = filter( lambda pdg: pdg != 22, parentList )
+    if not parentList: return -1
+
+    return int( parentList[0] )
+
