@@ -152,8 +152,8 @@ class Trainer:
             event.isSignal   = isSignal
             # write mva variables
             for name, func in self.mva_variables.iteritems():
-                setattr( event, name, func(reader.event) )
-
+#                setattr( event, name, func(reader.event) )
+                setattr( event, name, func(reader.event, sample=None) )
         # Create a maker. Maker class will be compiled. 
         maker = TreeMaker(
             sequence  = [ filler ],

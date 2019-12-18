@@ -31,19 +31,24 @@ else:
 # example methods
 
 class Reader:
-    def __init__( self, mva_variables, output_directory, label):
+    def __init__( self, mva_variables, weight_directory, label ):#output_directory, label):
 
         self.read_variables      = []
         self.mva_variables       = mva_variables
         self.label               = label
 
+        self.weight_directory    = weight_directory
+
         # Need to keep track of sequence!
         self.mva_variable_names  = mva_variables.keys() 
         self.mva_variable_names  .sort() 
 
-        self.output_directory    = os.path.join( output_directory, self.label )
-        self.mvaOutFile          = os.path.join( self.output_directory, self.label + "_MVAOutput.root" )
-        self.mvaWeightDir        = "weights" #os.path.join( self.output_directory, "weights" )
+#        self.output_directory    = os.path.join( output_directory, self.label )
+#        self.mvaOutFile          = os.path.join( self.output_directory, self.label + "_MVAOutput.root" )
+#        self.mvaWeightDir        = "weights" #os.path.join( self.output_directory, "weights" )
+        self.output_directory    = os.path.join( self.weight_directory, self.label )
+        self.mvaOutFile          = os.path.join( self.weight_directory, self.label + "_MVAOutput.root" )
+        self.mvaWeightDir        = self.weight_directory
 
     def addMethod( self, method ):
         # for MLP add HiddenLayer option that is of the form N,x,y,z,... where N is the number of variables and x,y,z the "layers" key
