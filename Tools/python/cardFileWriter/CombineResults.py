@@ -10,7 +10,7 @@ https://github.com/HephySusySW/Workspace/blob/94X-master/DegenerateStopAnalysis/
 and
 https://github.com/HephySusySW/Workspace/blob/94X-master/DegenerateStopAnalysis/python/tools/degTools.py
 
-Uses information of the *.txt, *.shapeCard.txt, shapeCard_FD.root and _nuisances*.txt files
+Uses information of the *.txt, *.shapeCard.txt, shapeCard_FD.root files
 """
 
 # Standard imports
@@ -54,23 +54,25 @@ class CombineResults:
             logger.warning( "Continuing with limited options!" )
             self.shapeFile = None
 
+        self.rootFile      = cardFile.replace(".txt","_shapeCard_FD.root" )
+        if not os.path.exists( self.rootFile ):
+            logger.warning( "Root file of fit result not found: %s"%self.rootFile )
+            logger.warning( "Continuing with limited options!" )
+            self.rootFile = None
+
+        # only used for impact plot
         self.shapeRootFile = cardFile.replace(".txt","_shape.root" )
         if not os.path.exists( self.shapeRootFile ):
             logger.warning( "Root file of fit result not found: %s"%self.shapeRootFile )
             logger.warning( "Continuing with limited options!" )
             self.shapeRootFile = None
 
+        # only used for impact plot
         self.rootCardFile = cardFile.replace(".txt","_shapeCard.root" )
         if not os.path.exists( self.rootCardFile ):
             logger.warning( "Root card file of fit result not found: %s"%self.rootCardFile )
             logger.warning( "Continuing with limited options!" )
             self.rootCardFile = None
-
-        self.rootFile      = cardFile.replace(".txt","_shapeCard_FD.root" )
-        if not os.path.exists( self.rootFile ):
-            logger.warning( "Root file of fit result not found: %s"%self.rootFile )
-            logger.warning( "Continuing with limited options!" )
-            self.rootFile = None
 
         self.plotDirectory = plotDirectory
         if not os.path.isdir( self.plotDirectory ):
@@ -587,7 +589,7 @@ class CombineResults:
 
         return modCardFile
 
-    def getRegionHistos( self, postFit=False, plotBins=None, nuisances=None, labelFormater=None ):
+    def getRegionHistos( self, postFit=False, plotBins=None, nuisances=None, bkgSubstracted=False, labelFormater=None ):
 
         if not self.rootFile:
             raise ValueError( "Root file of fit result not found! Running in limited mode, thus cannot get the object needed!" )
@@ -629,12 +631,11 @@ class CombineResults:
         hists["data"].legendText   = "data"
         hists["data"].legendOption = "p"
 
-        if nuisances:
+        if nuisances and not bkgSubstracted: # currently no single-nuisance plots with bkg substracted histograms #FIXME
             if isinstance( nuisances, str ): nuisances = [nuisances]
             hists.update( self.getNuisanceHistos( postFit=postFit, plotBins=None, nuisances=nuisances ) )
 
         labels = self.getBinLabels( labelFormater=labelFormater )
-        print labels
         for h_key, h in hists.iteritems():
             if nuisances and h_key in nuisances:
                 for i in range(h["up"].GetNbinsX()):
@@ -644,7 +645,6 @@ class CombineResults:
                 h["down"].LabelsOption("v","X") #"vu" for 45 degree labels
             else:
                 for i in range(h.GetNbinsX()):
-                    print h_key, h.GetNbinsX(), h, labels[i]
                     h.GetXaxis().SetBinLabel( i+1, labels[i] )
                 h.LabelsOption("v","X") #"vu" for 45 degree labels
 
@@ -659,10 +659,34 @@ class CombineResults:
 
         self.regionHistos[key][subkey] = hists
 
+        # substract backgrounds from data histo, remove bkg (except signal)
+        # remove histograms after storing it in self.regionHistos (I know, waste of resources in loops before)
+        if bkgSubstracted:
+            hists = {"data":hists["data"], "signal":hists["signal"], "total":hists["total"], "total_background":hists["total_background"], "total_signal":hists["total_signal"]}
+
+            hists["data"].Add( hists["total_background"], -1 )
+            # set negative bins to 0
+            for i in range(hists["data"].GetNbinsX()):
+                if hists["data"].GetBinContent(i+1) < 0: hists["data"].SetBinContent(i+1, 0)
+
+            hists["data_syst"] = hists["data"].Clone()
+            hists["data_stat"] = hists["data"].Clone()
+
+            for i in range(hists["data"].GetNbinsX()):
+                stat = hists["data"].GetBinError(i+1)
+                syst = hists["total_background"].GetBinError(i+1) / hists["total_background"].GetBinContent(i+1) * hists["data"].GetBinContent(i+1)
+                hists["data_syst"].SetBinError(i+1, syst)
+                hists["data_stat"].SetBinError(i+1, stat)
+                hists["data"].SetBinError(i+1, math.sqrt(stat**2+syst**2))
+
+            hists["total_background"].Scale(0)
+
         return hists
 
-    def getRegionHistoList( self, regionHistos, processes=None, noData=False, sorted=False ):
+    def getRegionHistoList( self, regionHistos, processes=None, noData=False, sorted=False, bkgSubstracted=False ):
         # get the list of histograms and the ratio list for plotting a region plot
+
+        if bkgSubstracted: return [ [regionHistos["signal"]], [regionHistos["data"]], [regionHistos["data_syst"]] ], [(0,1),(1,1),(2,1)]
 
         for p in processes:
             if not p in regionHistos.keys():
@@ -747,7 +771,7 @@ class CombineResults:
         shapeRootName = self.shapeRootFile.split("/")[-1]
         rootCardName  = self.rootCardFile.split("/")[-1]
 
-        # assuming you have combine in the same release!!!
+        # assuming you have combine in the same release!!! #FIXME
         combineReleaseLocation = os.path.join( os.environ["CMSSW_BASE"], "src" )
         combineDirname = os.path.join( combineReleaseLocation, str(self.year), cardName )
         if not os.path.isdir(combineDirname): os.makedirs(combineDirname)
@@ -759,19 +783,17 @@ class CombineResults:
 
         # use scram if combineReleaseLocation is a different release than current working directory
         # echo is just a placeholder
-        if os.environ["CMSSW_BASE"] in combineReleaseLocation:
-            scram = "echo ''"
-        else:
-            scram = "eval `scramv1 runtime -sh`"
+        if os.environ["CMSSW_BASE"] in combineReleaseLocation: scram = "echo ''"
+        else:                                                  scram = "eval `scramv1 runtime -sh`"
 
         if self.bkgOnly:
             prepWorkspace = "text2workspace.py %s --X-allow-no-signal -m 125"%shapeName
             if self.isSearch:
-                robustFit  = "combineTool.py -M Impacts -d %s -m 125 --doInitialFit --robustFit 1 --rMin -0.01 --rMax 0.01"%rootCardName
-                impactFits = "combineTool.py -M Impacts -d %s -m 125 --robustFit 1 --doFits --parallel %i --rMin -0.01 --rMax 0.01"%( rootCardName, cores )
+                robustFit  = "combineTool.py -M Impacts -d %s -m 125 --doInitialFit --robustFit 1 --rMin -0.001 --rMax 0.001"%rootCardName
+                impactFits = "combineTool.py -M Impacts -d %s -m 125 --robustFit 1 --doFits --parallel %i --rMin -0.001 --rMax 0.001"%( rootCardName, cores )
             else:
-                robustFit  = "combineTool.py -M Impacts -d %s -m 125 --doInitialFit --robustFit 1 --rMin 0.99 --rMax 1.01"%rootCardName
-                impactFits = "combineTool.py -M Impacts -d %s -m 125 --robustFit 1 --doFits --parallel %i --rMin 0.99 --rMax 1.01"%( rootCardName, cores )
+                robustFit  = "combineTool.py -M Impacts -d %s -m 125 --doInitialFit --robustFit 1 --rMin 0.999 --rMax 1.001"%rootCardName
+                impactFits = "combineTool.py -M Impacts -d %s -m 125 --robustFit 1 --doFits --parallel %i --rMin 0.999 --rMax 1.001"%( rootCardName, cores )
         else:
             prepWorkspace = "text2workspace.py %s -m 125"%shapeName
             robustFit     = "combineTool.py -M Impacts -d %s -m 125 --doInitialFit --robustFit 1 --rMin -10 --rMax 10"%rootCardName
@@ -788,7 +810,7 @@ class CombineResults:
         if expected:     plotName += "_expected"
 
         shutil.copyfile( combineDirname+"/impacts.pdf", "%s/%s.pdf"%(self.plotDirectory, plotName) )
-        if printPNG:
+        if printPNG: # useful to get a visible plot in the www directory, for nothing else
             os.system("convert -trim %s/%s.pdf -density 150 -verbose -quality 100 -flatten -sharpen 0x1.0 -geometry 1600x1600 %s/%s.png"%( self.plotDirectory, plotName, self.plotDirectory, plotName) )
             copyIndexPHP( self.plotDirectory )
 
