@@ -1,4 +1,5 @@
 from Analysis.Tools.helpers         import deltaR
+from math import isnan
 
 """ 
 Make sure you use nMax = 1000 (or large number) when reading in genParts from nanoAOD using VectorTreeVariable.fromString('GenPart[%s]'%variables, nMax = 1000)
@@ -61,15 +62,14 @@ def getPhotonCategory( g, genparts ):
     if not g or abs(g['pdgId']) not in [11,22]: return 3
 
 #    isIsolated = isIsolatedPhoton( g, genparts, coneSize=0.2, ptCut=5, excludedPdgIds=[12,-12,14,-14,16,-16] )
-    hasMeson   = hasMesonMother( getParentIds( g, genparts ) )
+    parentList = getParentIds( g, genparts )
+    hasMeson   = hasMesonMother( parentList )
 
+    # type 4: magic photons: no gen-particle close by. These get categorized in getAdvancedPhotonCategory()
     if abs(g['pdgId']) == 22 and not hasMeson: return 0  # type 0: genuine photon:   photon with no meson in parent list
     if abs(g['pdgId']) == 22 and hasMeson:     return 1  # type 1: hadronic photon:  photon with meson in parent list
-    if abs(g['pdgId']) == 11 and not hasMeson: return 2  # type 2: mis-Id electron:  electron with meson-mother requirement from genuine photon
+    if abs(g['pdgId']) == 11:                  return 2  # type 2: mis-Id electron:  electron with meson-mother requirement from genuine photon
     return 3
-
-#    if abs(g['pdgId']) == 22 and isIsolated and hasMeson:     return 1        # type 1: hadronic photon:  isolated photon with meson in parent list
-#    if abs(g['pdgId']) == 11 and isIsolated and not hasMeson: return 2       # type 2: mis-Id electron: electron with deltaR and meson-mother requirement from genuine photon
 
 def hasLeptonMother( g, genparts ):
     if not g: return 0
@@ -86,3 +86,46 @@ def getPhotonMother( g, genparts ):
 
     return int( parentList[0] )
 
+def getAdvancedPhotonCategory( recoPart, genParts, coneSize=0.2, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] ):
+
+    # nanoAOD genMatch found, just take that, do standard categorization
+    if recoPart['genPartIdx'] >= 0:
+        gen = filter( lambda g: g['index']==recoPart['genPartIdx'], genParts )[0]
+        return getPhotonCategory( gen, genParts ) # standard photon categories
+
+    rec = { val:recoPart[val] for val in ["pt","eta","phi","genPartIdx"] }
+    # no reco particles to match
+    if any( map( isnan, rec.values() ) ): return 3 # fakes
+
+    # no gen particles to match
+    if not genParts: return 4 # magic photons
+
+    # do not only focus on status 1 particles, you need everything
+    gParts = filter( lambda p: p['status']>0 and p['pt']>ptCut and p['pdgId'] not in excludedPdgIds, genParts )
+
+    # no filtered gen particles to match
+    if not gParts: return 4 # magic photons
+
+    # else do a delta R matching to all gen particles
+    # examples are tau- -> pi- pi0 nu_tau with pi0 -> gamma gamma
+    # when pT(pi-) is small, and the two gen photons get reconstructed as one reco photon
+    # and pT(gen gamma_1) ~ pT(gen gamma_2) and pT(reco gamma) > pT(gen gamma_1) + pT(gen gamma_2)
+    # the nanoAOD gen matching has a problem due to the 50% pT cut in the matching algorithm
+    # thus check for these kind of events with deltaR matching
+
+    genAll  = [ (g, deltaR( recoPart, g )) for g in gParts ]
+    genCone = filter( lambda (gen, dr): dr < coneSize, genAll ) if coneSize > 0 else genAll
+
+    # no gen particle in deltaR cone
+    if not genCone: return 4 # magic photons
+
+    genCone.sort( key=lambda (gen, dr): dr )
+    genConePdgIDs = [ abs(gen["pdgId"]) for (gen, dr) in genCone ]
+
+    # pi0 and photon in dR cone
+    if 111 in genConePdgIDs and 22 in genConePdgIDs:
+        return 1 # hadronics, photon from pi0 decay
+#        photon = filter( lambda (gen, dr): gen["pdgId"]==22, genCone )[0]
+#        return photon["index"]
+
+    return 3 # fake, gen particles close by, not pion decay, no nanoAOD gen-matching
