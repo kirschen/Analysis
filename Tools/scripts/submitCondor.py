@@ -52,6 +52,10 @@ parser.add_option('--logLevel',           dest="logLevel",           default="IN
 
 (options,args) = parser.parse_args()
 
+# Logging
+import Analysis.Tools.logger as logger
+logger  = logger.get_logger(options.logLevel, logFile = None)
+
 def getCommands( line ):
     commands = []
     split = None
@@ -107,7 +111,7 @@ if __name__ == '__main__':
         from RootTools.core.helpers import renew_proxy
         proxy = renew_proxy( proxy_location )
 
-#        logger.info( "Using proxy certificate %s", proxy )
+        logger.info( "Using proxy certificate %s", proxy )
         os.system("export X509_USER_PROXY=%s"%proxy)
 
     # load file with commands
