@@ -43,7 +43,6 @@ parser = OptionParser()
 parser.add_option('--logLevel',           dest="logLevel",           default="INFO",     choices=logChoices,       help="Log level for logging" )
 parser.add_option('--status',             dest="status",                                 action='store_true',      help="Runs just squeue")
 parser.add_option("--jobInfo",            dest="jobInfo",            default=None,       type=int,                 help="Print info to jobId" )
-parser.add_option("--removeLogs",         dest="removeLogs",                             action='store_true',      help="Remove all log-files!" )
 parser.add_option("--title",              dest="title",              default="batch",                              help="Job Title on batch" )
 parser.add_option("--output",             dest="output",             default=batch_output,                         help="Logfile directory. Default is /mnt/hephy/cms/%s/batch_output/")
 parser.add_option("--tmpDirectory",       dest="tmpDirectory",       default=batch_tmp,                            help="tmpfile directory. Default is /mnt/hephy/cms/%s/batch_input/")
@@ -102,8 +101,8 @@ def make_batch_job( file, script, command, proxy_cmd, nJobs=1 ):
     submitCommands += ["#SBATCH -J %s"%options.title]
     submitCommands += ["#SBATCH -D %s"%cwd]
     if nJobs > 1:
-        submitCommands += ["#SBATCH -o %s/clipBatch.%%J.%%A-%%a.out"%(options.output)]
-        submitCommands += ["#SBATCH -e %s/clipBatch.%%J.%%A-%%a.err"%(options.output)]
+        submitCommands += ["#SBATCH -o %s/batch.%%A-%%a.%%J.out"%(options.output)]
+        submitCommands += ["#SBATCH -e %s/batch.%%A-%%a.%%J.err"%(options.output)]
     else:
         submitCommands += ["#SBATCH -o %s/batch.%%J.out"%(options.output)]
         submitCommands += ["#SBATCH -e %s/batch.%%J.err"%(options.output)]
@@ -125,6 +124,9 @@ def make_batch_job( file, script, command, proxy_cmd, nJobs=1 ):
     if nJobs > 1:
         submitCommands += ["#SBATCH --array=0-%i"%(nJobs-1)]
     submitCommands += [""]
+    submitCommands += ["echo JobID $SLURM_JOB_ID, Array JobID $SLURM_ARRAY_JOB_ID, TaskID $SLURM_ARRAY_TASK_ID" if nJobs > 1 else "echo JobID $SLURM_JOB_ID"]
+    submitCommands += ["echo"]
+    submitCommands += [""]
 
     if options.cmssw:
         submitCommands += ["echo Loading CMSSW version %s from singularity container /mnt/hephy/cms/test/cmssw_CMSSW_%s.sif"%(options.cmssw, options.cmssw)]
@@ -134,8 +136,18 @@ def make_batch_job( file, script, command, proxy_cmd, nJobs=1 ):
     else:
         submitCommands += ["sh " + script]
 
-    submitCommands += ["rm %s"%script]
-    submitCommands += ["echo Removed execution file: %s"%script]
+    if nJobs > 1:
+        submitCommands += ["if [ $SLURM_ARRAY_TASK_ID -eq %i ]; then"%(nJobs-1)]
+        submitCommands += ["    rm %s"%script]
+        submitCommands += ["    echo Removed execution file: %s"%script]
+        submitCommands += ["fi"]
+    else:
+        submitCommands += ["rm %s"%script]
+        submitCommands += ["echo Removed execution file: %s"%script]
+
+    submitCommands += ["echo"]
+    submitCommands += ["echo Job Statistics:"]
+    submitCommands += ["seff $SLURM_JOB_ID"]
 
     with open( file, "w" ) as f:
         for cmd in submitCommands:
@@ -193,14 +205,6 @@ if __name__ == '__main__':
 
     if options.jobInfo:
         os.system("jobinfo %i"%options.jobInfo)
-        sys.exit(0)
-
-    # create logfile output dir
-    if options.removeLogs:
-        logger.info( "Removing log files in path %s"%options.output )
-        if os.path.exists( options.output ):
-            shutil.rmtree( options.output )
-            os.makedirs( options.output )
         sys.exit(0)
 
     if not len(args) == 1:
