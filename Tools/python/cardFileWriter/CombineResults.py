@@ -1,4 +1,4 @@
-# Still to do:
+# Still to do
 # signal on top of histlist for signalregions
 # cardfile manipulations
 # cleanup
@@ -88,7 +88,6 @@ class CombineResults:
         self.fitResults          = None
         self.fittedUncertainties = None
         self.constrain           = None
-        self.observations        = None
         self.nuisances           = None
         self.correlationHisto    = None
         self.rateParameter       = {"preFit":None, "postFit":None}
@@ -269,9 +268,15 @@ class CombineResults:
         return { b:self.__getNuisanceBinYield( nuisance=nuisance, bin=b, postFit=postFit ) for b in self.getBinList( unique=True ) }
 
     def __getNuisanceBinYield( self, nuisance, bin, postFit=False ):
-        yields    = self.getEstimates(       bin=bin, postFit=postFit )[bin]
+        yields    = self.getEstimates( postFit=postFit, directory=None )
         processes = self.getProcessesPerBin( bin=bin )[bin]
         unc       = self.getUncertainties(   bin=bin, postFit=postFit, systOnly=False )[bin]
+
+        del yields["total"]
+        for key, y in yields.iteritems():
+            if bin in y.keys():
+                yields = y[bin]
+                break
 
         if nuisance not in unc["signal"].keys():
             raise ValueError("Nuisance not in cardfile: %s. Use one of [%s]"%(nuisance, ", ".join(unc["signal"].keys())))
@@ -482,18 +487,29 @@ class CombineResults:
             else:
                 return self.uncertainties[key]
 
-        uncertainties = {}
         allUnc        = self.getNuisancesList( systOnly=systOnly )
-        allEst        = self.getProcessesPerBin( bin=None )
         rateParams    = self.getRateParameter()
+        allEst        = self.getProcessesPerBin( bin=None )
+        pulls         = self.getPulls( postFit=postFit )
+        binList       = self.getBinList( unique=False )
+        uncertainties = {}
 
-        for b in allEst.keys():
-            uncertainties[b] = {}
-            for est in allEst[b]:
-                uncertainties[b][est] = {}
-                for unc in allUnc:
-                    if unc in rateParams.keys(): continue # remove rate parameters as they would be 0 anyway
-                    uncertainties[b][est][unc] = self.__getUncertaintiesFromCard( estimate=est, nuisance=unc, bin=b, postFit=postFit )
+        with open( self.cardFile ) as f:
+            for line in f:
+                if not line.split():            continue
+                unc = line.split()[0] 
+                if unc not in allUnc: continue
+                if unc in rateParams.keys(): continue # remove rate parameters as they would be 0 anyway
+                for i_bin, _bin in enumerate(binList):
+                    if not _bin in uncertainties.keys(): uncertainties[_bin] = {}
+                    for est in allEst[_bin]:
+                        if not est in uncertainties[_bin].keys(): uncertainties[_bin][est] = {}
+                        try:
+                            uncertainties[_bin][est][unc] = float(line.split()[2:][i_bin])-1
+                            if postFit: uncertainties[_bin][est][unc] *= pulls[unc].val
+                        except:
+                            uncertainties[_bin][est][unc] = 0
+
         self.uncertainties[key] = uncertainties
 
         if bin or estimate or nuisance or systOnly:
@@ -501,61 +517,67 @@ class CombineResults:
         else:
             return self.uncertainties[key]
 
-    def getObservation( self, bin=None ):
-        return { b:b_dict["data"] for b, b_dict in  self.getEstimates( postFit=False, bin=bin, estimate="data" ).iteritems() }
+    def getObservation( self, bin=None, directory="total" ):
+        return {dir:{ b:b_dict["data"] for b, b_dict in o.iteritems() } for dir, o in self.getEstimates( postFit=False, bin=bin, estimate="data", directory=directory ).iteritems()}
 
-    def getEstimates( self, bin=None, estimate=None, postFit=False ):
+    def getEstimates( self, bin=None, estimate=None, directory="total", postFit=False ):
         key    = "postFit" if postFit else "preFit"
         if self.estimates[key]:
-            if bin or estimate:
-                return self.__filterDict( self.estimates[key], bin=bin, estimate=estimate )
-            else:
-                return self.estimates[key]
+            ests = self.estimates[key]
+            all = { d:self.__filterDict( dic, bin=bin, estimate=estimate ) if bin else dic for d, dic in ests.iteritems() } 
+            if directory: return {directory:all[directory]}                
+            else: return all
 
-        regionHistos = self.getRegionHistos( postFit=postFit, plotBins=None )
+        binList      = self.getBinList( unique=False )
+        regionHistos = self.getRegionHistos( postFit=postFit, plotBins=None, directory=None )
         processes    = self.getProcessesPerBin( bin=None )
         yields       = {}
-        tmp          = {}
-        for est, h in regionHistos.iteritems():
-#            if est not in processes and est != "data" and not "total" in est: continue
-            tmp[est] = {}
-            for i in range(h.GetNbinsX()):
-                y = h.GetBinContent(i+1)
-                e = h.GetBinError(i+1) # Attention, this is the full error, not only MC statistics! Fixme
-                tmp[est]["Bin%i"%i] = u_float( y, e )
-                yields["Bin%i"%i]    = {}
+        for dir, histoDict in regionHistos.iteritems():
+            tmp          = {}
+            yields[dir]  = {}
+            for est, h in histoDict.iteritems():
+#                if est not in processes and est != "data" and not "total" in est: continue
+                tmp[est] = {}
+                for i in range(h.GetNbinsX()):
+                    y = h.GetBinContent(i+1)
+                    e = h.GetBinError(i+1) # Attention, this is the full error, not only MC statistics! Fixme
+                    key = dir + "_Bin%i"%i if dir != "total" else binList[i]
+                    tmp[est][key] = u_float( y, e )
+                    yields[dir][key]    = {}
 
-        # stupid restructuring to make it compatible w/ other functions
-        for b in yields.keys():
-            for est in tmp.keys():
-                yields[b][est] = tmp[est][b]
+            # stupid restructuring to make it compatible w/ other functions
+            for b in yields[dir].keys():
+                for est in tmp.keys():
+                    yields[dir][b][est] = tmp[est][b]
 
         self.estimates[key] = yields
 
-        if bin or estimate:
-            return self.__filterDict( self.estimates[key], bin=bin, estimate=estimate )
-        else:
-            return self.estimates[key]
+        all = { d:self.__filterDict( dic, bin=bin, estimate=estimate ) if bin else dic for d, dic in yields.iteritems() } 
+        if directory: return {directory:all[directory]}                
+        else: return all
 
-    def getNuisanceHistos( self, postFit=False, plotBins=None, nuisances=None ):
+    def getNuisanceHistos( self, postFit=False, plotBins=None, nuisances=None, directory="total" ):
 
-        hists            = self.getRegionHistos( postFit=postFit, plotBins=None )
-        nuisanceHistUp   = hists["signal"].Clone()
-        nuisanceHistDown = hists["signal"].Clone()
-        nuisanceHistos   = {}
+        histDict       = self.getRegionHistos( postFit=postFit, plotBins=None, directory=directory )
+        nuisanceHistos = {}
 
-        for i_n, nuisance in enumerate(nuisances):
-            nuisanceYields   = self.getNuisanceYields( nuisance, postFit=postFit )
-            for _b, nDict in nuisanceYields.iteritems():
-                i = int(_b.split("Bin")[1])
-                nuisanceHistUp.SetBinContent(   i+1, nDict["up"] )
-                nuisanceHistDown.SetBinContent( i+1, nDict["down"] )
+        for dir, hist in histDict.iteritems():
+            nuisanceHistUp      = hist["total_signal"].Clone()
+            nuisanceHistDown    = hist["total_signal"].Clone()
+            nuisanceHistos[dir] = {}
+            for i_n, nuisance in enumerate(nuisances):
+                nuisanceYields  = self.getNuisanceYields( nuisance, postFit=postFit )
 
-            nuisanceHistos[nuisance]                    = { "up":nuisanceHistUp.Clone(), "down":nuisanceHistDown.Clone() }
-            nuisanceHistos[nuisance]["up"].style        = styles.lineStyle( ROOT.kSpring-1-i_n, width=3 ) #change to dynamic style
-            nuisanceHistos[nuisance]["down"].style      = styles.lineStyle( ROOT.kOrange+7+i_n, width=3 )
-            nuisanceHistos[nuisance]["up"].legendText   = nuisance + " (+1#sigma)"
-            nuisanceHistos[nuisance]["down"].legendText = nuisance + " (-1#sigma)"
+                for i in range(nuisanceHistUp.GetNbinsX()):
+                    nDict = nuisanceYields.values()[i]
+                    nuisanceHistUp.SetBinContent(   i+1, nDict["up"] )
+                    nuisanceHistDown.SetBinContent( i+1, nDict["down"] )
+    
+                nuisanceHistos[dir][nuisance]                    = { "up":nuisanceHistUp.Clone(), "down":nuisanceHistDown.Clone() }
+                nuisanceHistos[dir][nuisance]["up"].style        = styles.lineStyle( ROOT.kSpring-1-i_n, width=3 ) #change to dynamic style
+                nuisanceHistos[dir][nuisance]["down"].style      = styles.lineStyle( ROOT.kOrange+7+i_n, width=3 )
+                nuisanceHistos[dir][nuisance]["up"].legendText   = nuisance + " (+1#sigma)"
+                nuisanceHistos[dir][nuisance]["down"].legendText = nuisance + " (-1#sigma)"
 
         return nuisanceHistos
 
@@ -589,7 +611,7 @@ class CombineResults:
 
         return modCardFile
 
-    def getRegionHistos( self, postFit=False, plotBins=None, nuisances=None, bkgSubstracted=False, labelFormater=None ):
+    def getRegionHistos( self, postFit=False, plotBins=None, nuisances=None, bkgSubstracted=False, labelFormater=None, directory="total" ):
 
         if not self.rootFile:
             raise ValueError( "Root file of fit result not found! Running in limited mode, thus cannot get the object needed!" )
@@ -598,90 +620,102 @@ class CombineResults:
         subkey = self.__getSubKey( plotBins=plotBins )
 
         if subkey in self.regionHistos[key].keys() and self.regionHistos[key][subkey]:
-            return self.regionHistos[key][subkey]
+            hists = self.regionHistos[key][subkey]
+            if directory: return {directory:hists[directory]}                
+            else: return hists
 
         if   postFit and not self.bkgOnly: dirName = "shapes_fit_s"
         elif postFit and     self.bkgOnly: dirName = "shapes_fit_b"
         else:                              dirName = "shapes_prefit"
 
         fit      = self.__getFitObject( key=dirName )
-        channel  = copy.copy(fit.Get("Bin0"))
-        # make sure "data" is not the first entry
-        histList = [ x.GetName() for x in channel.GetListOfKeys() if x.GetName() != "data" ] + [ "data" ]
+        # loop over all directories, necessary for combined fits
+        channels = { x.GetName():copy.copy( fit.Get( x.GetName() ) ) for x in fit.GetListOfKeys() if isinstance( fit.Get(x.GetName()), ROOT.TDirectoryFile ) }
+        histDict = { dirName: [ x.GetName() for x in channel.GetListOfKeys() if x.GetName() != "data" ] + [ "data" ] for dirName, channel in channels.iteritems() }
+        channels.update( { "total": fit } )
+        histDict.update( { "total": [ x.GetName() for x in fit.GetListOfKeys() if x.GetName() not in channels.keys()] } )
         hists    = {}
-        for hist in histList:
-            if hist == "total_covar" or "process_" in hist: continue
+        for dir, histList in histDict.iteritems():
+            hists[dir]    = {}
+            histList.sort()
+            histList = filter( lambda hist: "total_covar" not in hist and "process_" not in hist, histList )
+            for hist in histList:
 
-            hists[hist] = copy.copy(channel.Get(hist))
+                hists[dir][hist] = copy.copy(channels[dir].Get(hist))
 
-            # change TGraph type to TH1F type for data
-            if hist == "data" and not "_rebinned" in self.cardFile:
-                dataHist = hists[histList[0]].Clone()
-                dataHist.Reset()
-                dataHist.SetName("data")
+                # change TGraph type to TH1F type for data
+                if "data" in hist and not "_rebinned" in self.cardFile:
+                    dataHist = hists[dir][histList[0]].Clone()
+                    dataHist.Reset()
+                    dataHist.SetName("data")
 
-                for i in range(dataHist.GetNbinsX()):
-                    dataHist.SetBinContent(i+1, hists["data"].Eval(i+0.5))
-                    dataHist.SetBinError(i+1, math.sqrt(hists["data"].Eval(i+0.5)))
+                    for i in range(dataHist.GetNbinsX()):
+                        dataHist.SetBinContent(i+1, hists[dir][hist].Eval(i+0.5))
+                        dataHist.SetBinError(i+1, math.sqrt(hists[dir][hist].Eval(i+0.5)))
 
-                hists[hist] = dataHist
+                    hists[dir]["data"] = dataHist
+                    if hist != "data": del hists[dir][hist]
 
-        # Data Histo
-        hists["data"].style        = styles.errorStyle( ROOT.kBlack )
-        hists["data"].legendText   = "data"
-        hists["data"].legendOption = "p"
+                    # Data Histo
+                    hists[dir]["data"].style        = styles.errorStyle( ROOT.kBlack )
+                    hists[dir]["data"].legendText   = "data"
+                    hists[dir]["data"].legendOption = "p"
 
-        if nuisances and not bkgSubstracted: # currently no single-nuisance plots with bkg substracted histograms #FIXME
-            if isinstance( nuisances, str ): nuisances = [nuisances]
-            hists.update( self.getNuisanceHistos( postFit=postFit, plotBins=None, nuisances=nuisances ) )
+            if nuisances and not bkgSubstracted: # currently no single-nuisance plots with bkg substracted histograms #FIXME
+                if isinstance( nuisances, str ): nuisances = [nuisances]
+                hists[dir].update( self.getNuisanceHistos( postFit=postFit, plotBins=None, nuisances=nuisances ) )
 
-        labels = self.getBinLabels( labelFormater=labelFormater )
-        for h_key, h in hists.iteritems():
-            if nuisances and h_key in nuisances:
-                for i in range(h["up"].GetNbinsX()):
-                    h["up"].GetXaxis().SetBinLabel( i+1, labels[i] )
-                    h["down"].GetXaxis().SetBinLabel( i+1, labels[i] )
-                h["up"].LabelsOption("v","X") #"vu" for 45 degree labels
-                h["down"].LabelsOption("v","X") #"vu" for 45 degree labels
-            else:
-                for i in range(h.GetNbinsX()):
-                    h.GetXaxis().SetBinLabel( i+1, labels[i] )
-                h.LabelsOption("v","X") #"vu" for 45 degree labels
+            labels = self.getBinLabels( labelFormater=labelFormater )
+            if labels:
+                for h_key, h in hists[dir].iteritems():
+                    if nuisances and h_key in nuisances:
+                        for i in range(h["up"].GetNbinsX()):
+                            h["up"].GetXaxis().SetBinLabel( i+1, labels[i] )
+                            h["down"].GetXaxis().SetBinLabel( i+1, labels[i] )
+                        h["up"].LabelsOption("v","X") #"vu" for 45 degree labels
+                        h["down"].LabelsOption("v","X") #"vu" for 45 degree labels
+                    else:
+                        for i in range(h.GetNbinsX()):
+                            h.GetXaxis().SetBinLabel( i+1, labels[i] )
+                        h.LabelsOption("v","X") #"vu" for 45 degree labels
 
-        # remove single bins from region plots
-        if plotBins:
-            for i_h, (h_key,h) in enumerate(hists.iteritems()):
-                if nuisances and h_key in nuisances:
-                    hists[h_key]["up"]   = self.__reduceHistogram( fromHisto=h["up"],   plotBins=plotBins )
-                    hists[h_key]["down"] = self.__reduceHistogram( fromHisto=h["down"], plotBins=plotBins )
-                else:
-                    hists[h_key] = self.__reduceHistogram( fromHisto=h, plotBins=plotBins )
+            # remove single bins from region plots
+            if plotBins:
+                for i_h, (h_key,h) in enumerate(hists[dir].iteritems()):
+                    if nuisances and h_key in nuisances:
+                        hists[dir][h_key]["up"]   = self.__reduceHistogram( fromHisto=h["up"],   plotBins=plotBins )
+                        hists[dir][h_key]["down"] = self.__reduceHistogram( fromHisto=h["down"], plotBins=plotBins )
+                    else:
+                        hists[dir][h_key] = self.__reduceHistogram( fromHisto=h, plotBins=plotBins )
 
         self.regionHistos[key][subkey] = hists
 
         # substract backgrounds from data histo, remove bkg (except signal)
         # remove histograms after storing it in self.regionHistos (I know, waste of resources in loops before)
         if bkgSubstracted:
-            hists = {"data":hists["data"], "signal":hists["signal"], "total":hists["total"], "total_background":hists["total_background"], "total_signal":hists["total_signal"]}
+            for dir, histList in histDict.iteritems():
+                hists[dir] = {"data":hists[dir]["data"], "signal":hists[dir]["signal"], "total":hists[dir]["total"], "total_background":hists[dir]["total_background"], "total_signal":hists[dir]["total_signal"]}
 
-            hists["data"].Add( hists["total_background"], -1 )
-            # set negative bins to 0
-            for i in range(hists["data"].GetNbinsX()):
-                if hists["data"].GetBinContent(i+1) < 0: hists["data"].SetBinContent(i+1, 0)
+                hists[dir]["data"].Add( hists[dir]["total_background"], -1 )
+                # set negative bins to 0
+                for i in range(hists[dir]["data"].GetNbinsX()):
+                    if hists[dir]["data"].GetBinContent(i+1) < 0: hists[dir]["data"].SetBinContent(i+1, 0)
 
-            hists["data_syst"] = hists["data"].Clone()
-            hists["data_stat"] = hists["data"].Clone()
+                hists[dir]["data_syst"] = hists[dir]["data"].Clone()
+                hists[dir]["data_stat"] = hists[dir]["data"].Clone()
 
-            for i in range(hists["data"].GetNbinsX()):
-                stat = hists["data"].GetBinError(i+1)
-                syst = hists["total_background"].GetBinError(i+1) / hists["total_background"].GetBinContent(i+1) * hists["data"].GetBinContent(i+1)
-                hists["data_syst"].SetBinError(i+1, syst)
-                hists["data_stat"].SetBinError(i+1, stat)
-                hists["data"].SetBinError(i+1, math.sqrt(stat**2+syst**2))
+                for i in range(hists[dir]["data"].GetNbinsX()):
+                    stat = hists[dir]["data"].GetBinError(i+1)
+                    syst = hists[dir]["total_background"].GetBinError(i+1) / hists[dir]["total_background"].GetBinContent(i+1) * hists[dir]["data"].GetBinContent(i+1)
+                    hists[dir]["data_syst"].SetBinError(i+1, syst)
+                    hists[dir]["data_stat"].SetBinError(i+1, stat)
+                    hists[dir]["data"].SetBinError(i+1, math.sqrt(stat**2+syst**2))
 
-            hists["total_background"].Scale(0)
+                hists[dir]["total_background"].Scale(0)
 
-        return hists
+        if subkey in self.regionHistos[key].keys() and self.regionHistos[key][subkey]:
+            if directory: return {directory:hists[directory]}                
+            else: return hists
 
     def getRegionHistoList( self, regionHistos, processes=None, noData=False, sorted=False, bkgSubstracted=False ):
         # get the list of histograms and the ratio list for plotting a region plot
