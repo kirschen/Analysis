@@ -506,7 +506,7 @@ class CombineResults:
                         if not est in uncertainties[_bin].keys(): uncertainties[_bin][est] = {}
                         try:
                             uncertainties[_bin][est][unc] = float(line.split()[2:][i_bin])-1
-                            if postFit: uncertainties[_bin][est][unc] *= pulls[unc].val
+                            if postFit: uncertainties[_bin][est][unc] *= pulls[unc].sigma
                         except:
                             uncertainties[_bin][est][unc] = 0
 
