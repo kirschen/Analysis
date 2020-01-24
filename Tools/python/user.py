@@ -8,7 +8,7 @@ if os.environ['USER'] in ['llechner']:
     cern_proxy_certificate = "/afs/cern.ch/user/l/llechner/private/.proxy"
     dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/llechner/'
 elif os.environ['USER'] in ['lukas.lechner']:
-    plot_directory         = "/users/lukas.lechner/www/TTGammaEFT/"
+    plot_directory         = "/mnt/hephy/cms/lukas.lechner/www/TTGammaEFT/"
     cache_directory        = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
     cern_proxy_certificate = "/users/lukas.lechner/private/.proxy"
     dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/llechner/'
