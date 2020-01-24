@@ -1,5 +1,8 @@
-from Analysis.Tools.helpers         import deltaR
+import ROOT
+import copy
 from math import isnan
+
+from Analysis.Tools.helpers         import deltaR
 
 """ 
 Make sure you use nMax = 1000 (or large number) when reading in genParts from nanoAOD using VectorTreeVariable.fromString('GenPart[%s]'%variables, nMax = 1000)
@@ -129,3 +132,45 @@ def getAdvancedPhotonCategory( recoPart, genParts, coneSize=0.2, ptCut=5., exclu
 #        return photon["index"]
 
     return 3 # fake, gen particles close by, not pion decay, no nanoAOD gen-matching
+
+def addParticle( to, add ):
+    # add particle "add" to particle "to"
+    toP  = ROOT.TLorentzVector()
+    addP = ROOT.TLorentzVector()
+
+    # add particles using TLorentzVector
+    toP.SetPtEtaPhiM(  to['pt'],  to['eta'],  to['phi'],  0 )
+    addP.SetPtEtaPhiM( add['pt'], add['eta'], add['phi'], 0 )
+    comb = toP + addP
+
+    # clone the properties of the to-particle and change its pt, eta, phi
+    combParticle        = copy.copy(to)
+    combParticle["pt"]  = comb.Pt()
+    combParticle["eta"] = comb.Eta()
+    combParticle["phi"] = comb.Phi()
+
+    return combParticle
+
+def addParticlesInCone( to, add, coneSize=0. ):
+    # add particles from the add collection to particles from the to collection, if they are within a certain coneSize
+    # one of the worst functions ever, sorry
+    if coneSize <= 0: return copy.copy(to), copy.copy(add)
+
+    add_ = copy.copy(add)
+    to_  = []
+
+    for t in to:
+
+        removeIndex = []
+        t_comb      = copy.copy(t)
+
+        for i, a in enumerate( add_ ):
+            if deltaR( t, a ) > coneSize: continue # no close particle, no particle to add
+            t_comb = addParticle( t_comb, a )
+            removeIndex.append(i)
+            
+        to_.append( t_comb )
+        add_ = [ g for i, g in enumerate( add_ ) if i not in removeIndex ]
+
+    return to_, add_
+
