@@ -265,7 +265,7 @@ class CombineResults:
         if plotBins: subkey = "_".join(map(str,plotBins))
         return subkey
 
-    def __getNuisanceYields( self, nuisance, postFit=False ):
+    def getNuisanceYields( self, nuisance, postFit=False ):
         return { b:self.__getNuisanceBinYield( nuisance=nuisance, bin=b, postFit=postFit ) for b in self.getBinList( unique=True ) }
 
     def __getNuisanceBinYield( self, nuisance, bin, postFit=False ):
@@ -513,7 +513,7 @@ class CombineResults:
                 return self.estimates[key]
 
         regionHistos = self.getRegionHistos( postFit=postFit, plotBins=None )
-        processes    = self.getProcessesPerBin( bin=bin )[bin]
+        processes    = self.getProcessesPerBin( bin=None )
         yields       = {}
         tmp          = {}
         for est, h in regionHistos.iteritems():
@@ -545,7 +545,7 @@ class CombineResults:
         nuisanceHistos   = {}
 
         for i_n, nuisance in enumerate(nuisances):
-            nuisanceYields   = self.__getNuisanceYields( nuisance, postFit=postFit )
+            nuisanceYields   = self.getNuisanceYields( nuisance, postFit=postFit )
             for _b, nDict in nuisanceYields.iteritems():
                 i = int(_b.split("Bin")[1])
                 nuisanceHistUp.SetBinContent(   i+1, nDict["up"] )
