@@ -517,7 +517,7 @@ class CombineResults:
         yields       = {}
         tmp          = {}
         for est, h in regionHistos.iteritems():
-            if est not in processes and est != "data" and not "total" in est: continue
+#            if est not in processes and est != "data" and not "total" in est: continue
             tmp[est] = {}
             for i in range(h.GetNbinsX()):
                 y = h.GetBinContent(i+1)
