@@ -881,36 +881,3 @@ class CombineResults:
 
         return self.covarianceHistos[key]
 
-
-if __name__ == "__main__":
-
-    from TTGammaEFT.Tools.user import plot_directory
-
-    # Logger
-    import Analysis.Tools.logger as logger
-    import RootTools.core.logger as logger_rt
-    logger    = logger.get_logger(   "INFO", logFile = None)
-    logger_rt = logger_rt.get_logger("INFO", logFile = None)
-
-    cardFile    = "/afs/hephy.at/data/llechner01/TTGammaEFT/cache/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3M3_VG3_misDY3_misTT2_incl.txt"
-#    modCardFile = "/afs/hephy.at/data/llechner01/TTGammaEFT/cache/analysis/2016/limits/cardFiles/defaultSetup/observed/SR3_VG3_misDY3_misTT2_incl.txt"
-    modCardFile = "/afs/hephy.at/data/llechner01/TTGammaEFT/cache/analysis/2016/limits/cardFiles/defaultSetup/observed/misTT2_addTTSF_incl.txt"
-#    cb = ch.CombineHarvester()
-#    cb.ParseDatacard(cardFile)
-#    cb.PrintAll()
-
-    add = [ item for item in cardFile.split("_") if item in ["addDYSF", "addMisIDSF", "misIDPOI", "incl"] ]
-    add.sort()
-    dirName  = "_".join( [ item for item in cardFile.split("/")[-1].split("_") if item not in ["addDYSF", "addMisIDSF", "misIDPOI", "incl"] ] )
-    fit      = "_".join( ["postFit"] + add )
-    plotDir  = os.path.join(plot_directory, "fit", str(2016), fit, dirName)
-    Results = CombineResults( cardFile, plotDir, 2016, bkgOnly=False )
-    print Results.getPulls(postFit=True)
-
-    newCard = Results.createRebinnedResults( modCardFile )
-    print newCard
-    newRes = CombineResults( newCard, plotDir, 2016, bkgOnly=False )
-#    print newRes.getPulls(postFit=True)
-#    print newRes.getUncertainties( postFit=True )
-#    print newRes.getRegionHistos( )
-#    print newRes.getNuisancesList()
