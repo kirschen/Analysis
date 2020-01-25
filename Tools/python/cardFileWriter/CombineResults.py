@@ -488,27 +488,27 @@ class CombineResults:
                 return self.uncertainties[key]
 
         allUnc        = self.getNuisancesList( systOnly=systOnly )
+        allEst        = self.getProcessList( unique=False )
         rateParams    = self.getRateParameter()
-        allEst        = self.getProcessesPerBin( bin=None )
         pulls         = self.getPulls( postFit=postFit )
         binList       = self.getBinList( unique=False )
         uncertainties = {}
 
         with open( self.cardFile ) as f:
             for line in f:
-                if not line.split():            continue
+                if not line.split(): continue
                 unc = line.split()[0] 
                 if unc not in allUnc: continue
                 if unc in rateParams.keys(): continue # remove rate parameters as they would be 0 anyway
                 for i_bin, _bin in enumerate(binList):
+                    est = allEst[i_bin]
                     if not _bin in uncertainties.keys(): uncertainties[_bin] = {}
-                    for est in allEst[_bin]:
-                        if not est in uncertainties[_bin].keys(): uncertainties[_bin][est] = {}
-                        try:
-                            uncertainties[_bin][est][unc] = float(line.split()[2:][i_bin])-1
-                            if postFit: uncertainties[_bin][est][unc] *= pulls[unc].sigma
-                        except:
-                            uncertainties[_bin][est][unc] = 0
+                    if not est in uncertainties[_bin].keys(): uncertainties[_bin][est] = {}
+                    try:
+                        uncertainties[_bin][est][unc] = float(line.split()[2:][i_bin])-1
+                        if postFit: uncertainties[_bin][est][unc] *= pulls[unc].sigma
+                    except:
+                        uncertainties[_bin][est][unc] = 0
 
         self.uncertainties[key] = uncertainties
 
