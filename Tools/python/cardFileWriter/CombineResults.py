@@ -278,8 +278,8 @@ class CombineResults:
                 yields = y[bin]
                 break
 
-        if nuisance not in unc["signal"].keys():
-            raise ValueError("Nuisance not in cardfile: %s. Use one of [%s]"%(nuisance, ", ".join(unc["signal"].keys())))
+        if nuisance not in unc["total_signal"].keys():
+            raise ValueError("Nuisance not in cardfile: %s. Use one of [%s]"%(nuisance, ", ".join(unc["total_signal"].keys())))
 
         y, yup, ydown = 0, 0, 0
         for p in processes:
@@ -644,16 +644,20 @@ class CombineResults:
                 hists[dir][hist] = copy.copy(channels[dir].Get(hist))
 
                 # change TGraph type to TH1F type for data
-                if "data" in hist and not "_rebinned" in self.cardFile:
+                if "data" in hist:# and not "_rebinned" in self.cardFile:
                     dataHist = hists[dir][histList[0]].Clone()
                     dataHist.Reset()
                     dataHist.SetName("data")
 
-                    for i in range(dataHist.GetNbinsX()):
-                        dataHist.SetBinContent(i+1, hists[dir][hist].Eval(i+0.5))
-                        dataHist.SetBinError(i+1, math.sqrt(hists[dir][hist].Eval(i+0.5)))
+                    if type( hists[dir][hist] ) == ROOT.TGraphAsymmErrors:
+                        for i in range(dataHist.GetNbinsX()):
+                            dataHist.SetBinContent(i+1, hists[dir][hist].Eval(i+0.5))
+                            dataHist.SetBinError(i+1, math.sqrt(hists[dir][hist].Eval(i+0.5)))
+                        hists[dir]["data"] = dataHist
+                    else:
+                        hists[dir]["data"] = hists[dir][hist]
 
-                    hists[dir]["data"] = dataHist
+
                     if hist != "data": del hists[dir][hist]
 
                     # Data Histo
@@ -675,6 +679,7 @@ class CombineResults:
                         h["up"].LabelsOption("v","X") #"vu" for 45 degree labels
                         h["down"].LabelsOption("v","X") #"vu" for 45 degree labels
                     else:
+                        print h, h.GetName()
                         for i in range(h.GetNbinsX()):
                             h.GetXaxis().SetBinLabel( i+1, labels[i] )
                         h.LabelsOption("v","X") #"vu" for 45 degree labels
@@ -694,7 +699,7 @@ class CombineResults:
         # remove histograms after storing it in self.regionHistos (I know, waste of resources in loops before)
         if bkgSubstracted:
             for dir, histList in histDict.iteritems():
-                hists[dir] = {"data":hists[dir]["data"], "signal":hists[dir]["signal"], "total":hists[dir]["total"], "total_background":hists[dir]["total_background"], "total_signal":hists[dir]["total_signal"]}
+                hists[dir] = {"data":hists[dir]["data"], "signal":hists[dir]["total_signal"], "total":hists[dir]["total" if "total" in hists[dir].keys() else "total_overall"], "total_background":hists[dir]["total_background"], "total_signal":hists[dir]["total_signal"]}
 
                 hists[dir]["data"].Add( hists[dir]["total_background"], -1 )
                 # set negative bins to 0
