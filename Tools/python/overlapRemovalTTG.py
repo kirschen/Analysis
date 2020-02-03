@@ -1,3 +1,4 @@
+
 import ROOT
 import copy
 from math import isnan
@@ -173,4 +174,25 @@ def addParticlesInCone( to, add, coneSize=0. ):
         add_ = [ g for i, g in enumerate( add_ ) if i not in removeIndex ]
 
     return to_, add_
+
+def calculateGenIso( g, genParts, coneSize=0.3, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ], chgIso=False ):
+
+    if g["pt"] == 0: return 999.
+
+    # select gen particles to consider
+    gParts = filter( lambda p: p['status'] == 1 and p['pt']>ptCut and p['pdgId'] not in excludedPdgIds and not (p['pt']==g['pt'] and p['eta']==g['eta'] and p['phi']==g['phi']), genParts )
+
+    # filter gen particles in cone
+    gParts = [ (p, deltaR( g, p )) for p in gParts ]
+    gParts = filter( lambda (p, dr): dr < coneSize, gParts ) if coneSize > 0 else gParts
+    if not gParts: return 0.
+
+    if chgIso:
+        gParts = filter( lambda (p, dr): p["pdgId"] not in [22,111,130,310,311,2112], gParts )
+        if not gParts: return 0.
+
+    print [p["pdgId"] for (p,dr) in gParts]
+
+    pTCone = sum( [p["pt"] for (p, dr) in gParts] )
+    return pTCone/g["pt"]
 
