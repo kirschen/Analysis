@@ -679,7 +679,6 @@ class CombineResults:
                         h["up"].LabelsOption("v","X") #"vu" for 45 degree labels
                         h["down"].LabelsOption("v","X") #"vu" for 45 degree labels
                     else:
-                        print h, h.GetName()
                         for i in range(h.GetNbinsX()):
                             h.GetXaxis().SetBinLabel( i+1, labels[i] )
                         h.LabelsOption("v","X") #"vu" for 45 degree labels
