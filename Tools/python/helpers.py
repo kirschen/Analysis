@@ -494,6 +494,13 @@ def mTsq( p1, p2 ):
 def mT( p1, p2 ):
     return sqrt( mTsq(p1, p2) )
 
+def mTg( l, p, met ):
+    met = ROOT.TVector2( met["pt"]*cos(met["phi"]), met["pt"]*sin(met["phi"]) )
+    l   = ROOT.TVector2( l["pt"]*cos(l["phi"]),     l["pt"]*sin(l["phi"])     )
+    p   = ROOT.TVector2( p["pt"]*cos(p["phi"]),     p["pt"]*sin(p["phi"])     )
+    w   = met + l + p
+    return w.Mod()
+
 def nonEmptyFile( f, treeName='Events' ):
     rf = ROOT.TFile.Open(f)
     if not rf: return False
