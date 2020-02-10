@@ -495,6 +495,9 @@ def mT( p1, p2 ):
     return sqrt( mTsq(p1, p2) )
 
 def mTg( l, p, met ):
+    mT2 = mTsq( l, p ) + mTsq( l, met ) + mTsq( p, met )
+    return sqrt( mT2 )
+
     met = ROOT.TVector2( met["pt"]*cos(met["phi"]), met["pt"]*sin(met["phi"]) )
     l   = ROOT.TVector2( l["pt"]*cos(l["phi"]),     l["pt"]*sin(l["phi"])     )
     p   = ROOT.TVector2( p["pt"]*cos(p["phi"]),     p["pt"]*sin(p["phi"])     )
