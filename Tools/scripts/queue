@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 """ 
 selects batch jobs in the queue by criteria and either displays them like squeue (default), gives the number of jobs (--n), gives infos to the jobs (--info)  or removes them (--rm)
@@ -16,18 +16,10 @@ import os, sys, operator
 # Defaults
 user          = os.getenv("USER")
 hostname      = os.getenv("HOSTNAME")
-inSingularity = os.path.exists("/.singularity.d/")
 
-if not "clip" in hostname:
-    raise Exception( "Running queue outside of clip is not supported!" )
-
-if inSingularity:
-    raise Exception( "Running queue inside of Singularity is not supported!" )
-
-from clipHelpers import get_batchInfo
+from Analysis.Tools.batchHelpers import get_batchInfo
 
 logChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET', 'SYNC']
-pChoices  = ["c", "m", "g"]
 sChoices  = ["R", "PD", "CG"]
 
 import argparse
@@ -36,15 +28,13 @@ argParser.add_argument('--logLevel',      default="INFO",      choices=logChoice
 argParser.add_argument('--n',             action='store_true',                                  help="list number of jobs!")
 argParser.add_argument('--nInfo',         action='store_true',                                  help="list number of jobs grouped per title!")
 argParser.add_argument('--rm',            action='store_true',                                  help="removes jobs")
-argParser.add_argument('--info',          action='store_true',                                  help="print info to job")
 argParser.add_argument('--title',         action='store',      type=str, default=None, nargs="*",                    help="filter output by title, wildcards in beginning and end accepted, multiple arguments are or-ed")
 argParser.add_argument('--jobID',         action='store',      type=str, default=None, nargs="*",                    help="filter output by jobIDs, wildcards in beginning and end accepted, range combined with -, range w/ sub-jobs XX_01 not supported, multiple arguments are or-ed")
-argParser.add_argument('--partition',     action='store',      type=str, default=None, nargs="*", choices=pChoices,  help="filter output by partition, multiple arguments are or-ed")
 argParser.add_argument('--status',        action='store',      type=str, default=None, nargs="*", choices=sChoices,  help="filter output by status, R: running, PD: pending, CG: killed, multiple arguments are or-ed")
 args = argParser.parse_args()
 
 # Logger
-import logger
+import Analysis.Tools.logger as logger
 logger = logger.get_logger( args.logLevel, logFile=None )
 
 def formatJobToString( job ):
@@ -90,13 +80,6 @@ elif args.nInfo:
     print
     for t, nj in nJobs:
         print "nJobs with title %s: %i"%(t, nj)
-
-elif args.info:
-    # remove jobs
-    for job in jobs:
-        logger.info("Info to jobID %s"%job["jobID"] )
-        os.system( "jobinfo %s"%job["jobID"] )
-        print
 
 elif args.rm:
     # remove jobs
