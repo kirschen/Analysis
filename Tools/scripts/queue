@@ -6,7 +6,6 @@ filter criteria are:
 --title TITLE: one or list of titles (more than one are or-ed), wildcards at the beginning or end are accepted. e.g. --title mc* or --title *est or --title *16* or --title mc16 *17 data*
 --jobID JOBID: one or list of jobIDs (more than one are or-ed) or range separated with -, wildcards at the beginning or end are accepted. e.g. --jobID 95514* or --jobID *1973 or --jobId 95514 95573* or --jobID 9553*-9666*
 take care of sub-jobs either with wildcards 95524* or explicitly 95524_1
---partition PARTITION: filter by partition, either c, m or g or a list of partitions. e.g. --partition m c
 --status STATUS: filter by status, either R (running), PD (pending) or CG (killed) or a list of stati. e.g. --status R PD
 """
 
@@ -61,7 +60,7 @@ if args.jobID:
             jobIDs += jobToJobRange( job )
     args.jobID = jobIDs
 
-jobs = get_batchInfo( jobID=args.jobID, partition=args.partition, title=args.title, user=user, status=args.status )
+jobs = get_batchInfo( jobID=args.jobID, title=args.title, user=user, status=args.status )
 
 if args.n:
     # squeue | wc -l
