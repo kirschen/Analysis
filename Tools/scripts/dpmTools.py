@@ -2,9 +2,8 @@
 import os, sys
 import subprocess
 
-redir       = "root://hephyse.oeaw.ac.at/"
+redir       = "root://hephyse.oeaw.ac.at:11001/"
 hostname    = os.getenv("HOSTNAME")
-runOnLxplus = "cern" in hostname
 
 
 def checkRootFile( file ):
@@ -20,7 +19,7 @@ def checkRootFile( file ):
 def getDPMFiles( path, fromLxPlus=False ):
     """ get all files in dpm directory
     """
-    if runOnLxplus:
+    if "cern" in hostname or "clip" in hostname:
         cmd = "xrdfs %s ls %s" %(redir,path)
     else:
         cmd = "dpns-ls %s"%path
@@ -79,7 +78,7 @@ def removeDPMFiles( path ):
     """ remove dpm dir or file (only for user dirs)
     """
 
-    if not os.environ["USER"] in path:
+    if not os.environ["USER"] in path and not (os.environ["CERN_USER"] in path and "clip" in hostname):
         logger.info( "ATTENTION: DO NOT REMOVE FILES FROM OTHERS DPM DIRECTORIES: %s"%path )
         logger.info( "EXITING" )
         sys.exit(1)
@@ -88,7 +87,7 @@ def removeDPMFiles( path ):
 
     for rmPath in rmPathList:
         logger.info( "Removing %s"%rmPath )
-        if runOnLxplus:
+        if "cern" in hostname or "clip" in hostname:
             try:    os.system( "xrdfs %s rmdir %s" %(redir,rmPath) )
             except: os.system( "xrdfs %s rm %s" %(redir,rmPath) )
         else:
@@ -115,7 +114,7 @@ def makeDPMDir( path ):
         if not checkDPMDirExists( motherPath ):
             makeDPMDir( motherPath )
         logger.info( "Creating directory: %s"%path )
-        if runOnLxplus:
+        if "cern" in hostname or "clip" in hostname:
             cmd = "xrdfs %s mkdir %s" %(redir,path)
         else:
             cmd = "dpns-mkdir %s"%path
