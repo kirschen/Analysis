@@ -7,6 +7,11 @@ if os.environ['USER'] in ['llechner']:
     cache_directory        = "/afs/hephy.at/data/llechner01/TTGammaEFT/cache/"
     cern_proxy_certificate = "/afs/cern.ch/user/l/llechner/private/.proxy"
     dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/llechner/'
+elif os.environ['USER'] in ['lukas.lechner']:
+    plot_directory         = "/mnt/hephy/cms/lukas.lechner/www/TTGammaEFT/"
+    cache_directory        = "/mnt/hephy/cms/lukas.lechner/TTGammaEFT/cache/"
+    cern_proxy_certificate = "/users/lukas.lechner/private/.proxy"
+    dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/llechner/'
 elif os.environ['USER'] in ['dspitzba', 'dspitzbart']:
     plot_directory         = "/afs/hephy.at/user/d/dspitzbart/www/stopsDileptonLegacy/"
     cache_directory        = "/afs/hephy.at/data/dspitzbart01/cache/"
@@ -18,6 +23,10 @@ elif os.environ['USER'] in ['phussain']:
 elif os.environ['USER'] in ['rschoefbeck']:
     plot_directory         = "/afs/hephy.at/user/r/rschoefbeck/www/StopsDilepton/"
     cache_directory        = "/afs/hephy.at/data/rschoefbeck01/cache/"
+    dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/schoef/'
+elif os.environ['USER'] in ['robert.schoefbeck']:
+    plot_directory         = "/mnt/hephy/cms/robert.schoefbeck/StopsDileptonLegacy/plots"
+    cache_directory        = "/mnt/hephy/cms/robert.schoefbeck/caches/"
     dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/schoef/'
 elif os.environ['USER'] in ['schoef']:
     plot_directory         = "/afs/hephy.at/user/r/rschoefbeck/www/StopsDilepton/"

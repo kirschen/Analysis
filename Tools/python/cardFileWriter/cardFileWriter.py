@@ -91,11 +91,11 @@ class cardFileWriter:
             return
         self.rateParameters.append((p, value, r))
 
-    def addFreeParameter(self, p):
+    def addFreeParameter(self, p, value, r):
         if [ a[0] for a in self.freeParameters ].count(p):
             logger.info("Free parameter for process %s already added!"%p)
             return
-        self.freeParameters.append(p)
+        self.freeParameters.append((p, value, r))
 
     def specifyExpectation(self, b, p, exp):
         self.expectation[(b,p)] = round(exp, self.precision)
@@ -130,7 +130,6 @@ class cardFileWriter:
             print "Process ", p," is not in bin",b,". Available for ", b,":",self.processes[b]
             return
         if val<0:
-#      assert self.expectation[(b, p)]<0.1, "Found negative uncertainty %f for yield %f in %r."%(val, self.expectation[(b, p)], (u,b,p))
             print "Warning! Found negative uncertainty %f for yield %f in %r. Reversing sign under the assumption that the correlation pattern is irrelevant (check!)."%(val, self.expectation[(b, p)], (u,b,p))
             _val=1.0
         else:
@@ -233,7 +232,9 @@ class cardFileWriter:
 
         for p in self.freeParameters:
             outfile.write('\n')
-            outfile.write('%s rateParam * *%s 1\n'%(p, p))
+            for b in self.bins:
+                outfile.write('%s_norm_%s rateParam %s *%s* (@0*1) %s_norm\n'%(p[0], b, b, p[0], p[0]))
+            outfile.write('%s_norm extArg %s %s\n'%(p[0], str(p[1]), str(p[2])))
 
         if shapeFile:
             outfile.write('* autoMCStats 0 \n')
@@ -370,7 +371,6 @@ class cardFileWriter:
         preFac = 1.
         for i in range(t.GetEntries()):
                 t.GetEntry(i)
-#        limit["{0:.3f}".format(round(qE.GetValue(),3))] = preFac*l.GetValue()
                 limit["{0:.3f}".format(round(qE.GetValue(),3))] = preFac*l.GetValue()
         f.Close()
         return limit
@@ -400,8 +400,6 @@ class cardFileWriter:
         os.system(combineCommand)
 
         tempResFile = uniqueDirname+"/higgsCombineTest.AsymptoticLimits.mH120.root"
-
-        #print tempResFile  
 
         try:
             res= self.readResFile(tempResFile)
@@ -471,23 +469,14 @@ class cardFileWriter:
         uniqueDirname = os.path.join(self.releaseLocation, ustr)
         print "Creating %s"%uniqueDirname
         os.makedirs(uniqueDirname)
-        print fname
-        #if fname=="":
-        #    fname = str(ustr+".txt")
-        #    self.writeToFile(uniqueDirname+"/"+fname)
-        #else:
-        #    self.writeToFile(fname)
         combineCommand = "cd "+uniqueDirname+";combine --saveWorkspace -M ProfileLikelihood --uncapped 1 --significance --rMin -5 "+fname
         os.system(combineCommand)
-        #os.system("pushd "+self.releaseLocation+";popd;cd "+uniqueDirname+";"+self.combineStr+" --saveWorkspace  -M ProfileLikelihood --significance "+fname+" -t -1 --expectSignal=1 ")
         try:
             res= self.readResFile(uniqueDirname+"/higgsCombineTest.ProfileLikelihood.mH120.root")
             os.system("rm -rf "+uniqueDirname+"/higgsCombineTest.ProfileLikelihood.mH120.root")
         except:
             res=None
             print "Did not succeed."
-        #if res:
-        #    os.system("cp "+uniqueDirname+"/higgsCombineTest.ProfileLikelihood.mH120.root "+fname.replace('.txt','')+'.root')
         shutil.rmtree(uniqueDirname)
 
         return res

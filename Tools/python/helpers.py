@@ -494,6 +494,10 @@ def mTsq( p1, p2 ):
 def mT( p1, p2 ):
     return sqrt( mTsq(p1, p2) )
 
+def mTg( l, g, met ):
+    mT2 = mTsq( l, g ) + mTsq( l, met ) + mTsq( g, met )
+    return sqrt( mT2 )
+
 def nonEmptyFile( f, treeName='Events' ):
     rf = ROOT.TFile.Open(f)
     if not rf: return False

@@ -73,7 +73,7 @@ def make_batch_job( batch_job_file, batch_job_title, batch_output_dir , command 
     # If X509_USER_PROXY is set, use existing proxy.
     if options.dpm:
         if host == 'lxplus':
-            from StopsDilepton.Tools.user import cern_proxy_certificate
+            from Analysis.Tools.user import cern_proxy_certificate
             proxy_location = cern_proxy_certificate
         else:
             proxy_location = None

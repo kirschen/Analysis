@@ -28,6 +28,10 @@ class GenSearch:
         ''' Returns true if the decay products of p do not contain a particle with p.pdgId() '''
         return p.pdgId() not in [d.pdgId() for d in self.daughters( p )]
 
+    def isFirst(self, p ):
+        ''' Returns true if the particle pdgId is not found in the list of mothers '''
+        return p.pdgId() not in [m.pdgId() for m in self.mothers( p )]
+
     def descend(self, p):
         ''' Returns the last particle of the same pdgId in the decay chain started by p
         '''

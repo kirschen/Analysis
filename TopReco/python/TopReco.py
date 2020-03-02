@@ -7,7 +7,10 @@ ROOT.KinematicReconstruction
 
 # efficiciency directory
 
-directory = "/afs/hephy.at/data/rschoefbeck01/TopReco/data"
+if "clip" in os.getenv("HOSTNAME").lower(): # load from CLIP
+    directory = "/mnt/hephy/cms/lukas.lechner/TopReco/data"
+else:
+    directory = "/afs/hephy.at/data/rschoefbeck01/TopReco/data"
 
 def massless_LorentzVector( particle_dict ):
     return ROOT.Math.LorentzVector('ROOT::Math::PtEtaPhiM4D<double>')( particle_dict['pt'], particle_dict['eta'], particle_dict['phi'], 0. )
