@@ -264,10 +264,10 @@ class CombineResults:
         if plotBins: subkey = "_".join(map(str,plotBins))
         return subkey
 
-    def getNuisanceYields( self, nuisance, postFit=False ):
-        return { b:self.__getNuisanceBinYield( nuisance=nuisance, bin=b, postFit=postFit ) for b in self.getBinList( unique=True ) }
+    def getNuisanceYields( self, nuisance, postFit=False, addSignal=(not self.isSearch) ):
+        return { b:self.__getNuisanceBinYield( nuisance=nuisance, bin=b, postFit=postFit, addSignal=addSignal ) for b in self.getBinList( unique=True ) }
 
-    def __getNuisanceBinYield( self, nuisance, bin, postFit=False ):
+    def __getNuisanceBinYield( self, nuisance, bin, postFit=False, addSignal=True ):
         yields    = self.getEstimates( postFit=postFit, directory=None )
         processes = self.getProcessesPerBin( bin=bin )[bin]
         unc       = self.getUncertainties(   bin=bin, postFit=postFit, systOnly=False )[bin]
@@ -278,11 +278,12 @@ class CombineResults:
                 yields = y[bin]
                 break
 
-        if nuisance not in unc["total_signal"].keys():
-            raise ValueError("Nuisance not in cardfile: %s. Use one of [%s]"%(nuisance, ", ".join(unc["total_signal"].keys())))
+        #if nuisance not in unc["total_signal"].keys():
+        #    raise ValueError("Nuisance not in cardfile: %s. Use one of [%s]"%(nuisance, ", ".join(unc["total_signal"].keys())))
 
         y, yup, ydown = 0, 0, 0
         for p in processes:
+            if p.count('signal') and not addSignal: continue
             yproc  = yields[p].val if p in yields.keys() else 0 # yield is 0 when it is not in the results? or throw an error? FIXME
             uproc  = unc[p][nuisance]
             y     += yproc
