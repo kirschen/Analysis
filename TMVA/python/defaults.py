@@ -12,7 +12,8 @@ default_methods = {
     "MLP":{
         "type"                : ROOT.TMVA.Types.kMLP,
         "name"                : "MLP21",
-        "layers"              : [1],
+        #"layers"              : [1],
+        "layers"              : "N+1",
         "color"               : ROOT.kRed,
         "options"             : ["!H","!V","VarTransform=Norm,Deco","NeuronType=sigmoid","NCycles=10000","TrainingMethod=BP","LearningRate=0.03", "DecayRate=0.01","Sampling=0.3","SamplingEpoch=0.8","ConvergenceTests=1","CreateMVAPdfs=True","TestRate=10" ],
         },

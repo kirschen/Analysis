@@ -111,8 +111,8 @@ class MergingDirDB:
         ''' Get all entries in the database matching the provided key.
         '''
 
-        if self.data_dict.has_key( key ): return self.data_dict[ key ]
         if self.data_on_disk_dict.has_key( key ): return self.data_on_disk_dict[ key ]
+        if self.data_dict.has_key( key ): return self.data_dict[ key ]
         # if we don't alread have the key, load it from all files and remember it in case you're asked again:
         return self.read_from_all_files(key)
 
