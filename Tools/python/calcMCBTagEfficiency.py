@@ -135,11 +135,17 @@ if __name__ == "__main__":
         #print
         #writeToFile ( res, "TTLep_pow_2016_2j_2l_CSVv2_eta" )
 
-        res = getBTagMCTruthEfficiencies2D( tt16.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagDeepB', btagWP='0.6324', etaBins=etaBins2016 )
+        #res = getBTagMCTruthEfficiencies2D( tt16.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagDeepB', btagWP='0.6324', etaBins=etaBins2016 )
+        #print "Efficiencies 2016:"
+        #print res
+        #print
+        #writeToFile ( res, "TTLep_pow_2016_2j_2l_DeepB_eta_v2" )
+
+        res = getBTagMCTruthEfficiencies2D( tt16.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagDeepFlavB', btagWP='0.3093', etaBins=etaBins2016 )
         print "Efficiencies 2016:"
         print res
         print
-        writeToFile ( res, "TTLep_pow_2016_2j_2l_DeepB_eta_v2" )
+        writeToFile ( res, "TTLep_pow_2016_2j_2l_DeepFlavB_eta_v2" )
 
     elif options.year == 2017:
     # 2017
@@ -150,11 +156,17 @@ if __name__ == "__main__":
         #print
         #writeToFile ( res, "TTLep_pow_2017_2j_2l_CSVv2_eta" )
 
-        res = getBTagMCTruthEfficiencies2D( tt17.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagDeepB', btagWP='0.4941', etaBins=etaBins2017 )
+        #res = getBTagMCTruthEfficiencies2D( tt17.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagDeepB', btagWP='0.4941', etaBins=etaBins2017 )
+        #print "Efficiencies 2017:"
+        #print res
+        #print
+        #writeToFile ( res, "TTLep_pow_2017_2j_2l_DeepB_eta_v2" )
+
+        res = getBTagMCTruthEfficiencies2D( tt17.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagDeepFlavB', btagWP='0.3033', etaBins=etaBins2017 )
         print "Efficiencies 2017:"
         print res
         print
-        writeToFile ( res, "TTLep_pow_2017_2j_2l_DeepB_eta_v2" )
+        writeToFile ( res, "TTLep_pow_2017_2j_2l_DeepFlavB_eta_v2" )
 
     elif options.year == 2018:
     # 2018
@@ -164,10 +176,14 @@ if __name__ == "__main__":
         #print res
         #writeToFile ( res, "TTLep_pow_2018_2j_2l_CSVv2_eta" )
 
-        res = getBTagMCTruthEfficiencies2D( tt18.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagDeepB', btagWP='0.4184', etaBins=etaBins2018 )
+        #res = getBTagMCTruthEfficiencies2D( tt18.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagDeepB', btagWP='0.4184', etaBins=etaBins2018 )
+        #print "Efficiencies 2018:"
+        #print res
+        #print
+        #writeToFile ( res, "TTLep_pow_2018_2j_2l_DeepB_eta_v2" )
+
+        res = getBTagMCTruthEfficiencies2D( tt18.chain, cut=preSel, overwrite=options.overwrite, btagVar='Jet_btagDeepFlavB', btagWP='0.2770', etaBins=etaBins2018 )
         print "Efficiencies 2018:"
         print res
         print
-        writeToFile ( res, "TTLep_pow_2018_2j_2l_DeepB_eta_v2" )
-
-
+        writeToFile ( res, "TTLep_pow_2018_2j_2l_DeepFlavB_eta_v2" )

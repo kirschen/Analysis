@@ -278,11 +278,12 @@ class CombineResults:
                 yields = y[bin]
                 break
 
-        if nuisance not in unc["total_signal"].keys():
-            raise ValueError("Nuisance not in cardfile: %s. Use one of [%s]"%(nuisance, ", ".join(unc["total_signal"].keys())))
+        #if nuisance not in unc["total_signal"].keys():
+        #    raise ValueError("Nuisance not in cardfile: %s. Use one of [%s]"%(nuisance, ", ".join(unc["total_signal"].keys())))
 
         y, yup, ydown = 0, 0, 0
         for p in processes:
+            if p.count('signal') and self.isSearch: continue
             yproc  = yields[p].val if p in yields.keys() else 0 # yield is 0 when it is not in the results? or throw an error? FIXME
             uproc  = unc[p][nuisance]
             y     += yproc

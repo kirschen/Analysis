@@ -23,15 +23,19 @@ def toFlavourKey(pdgId):
     if abs(pdgId)==4: return ROOT.BTagEntry.FLAV_C
     return ROOT.BTagEntry.FLAV_UDSG
 
-
 #Method 1ab
+effFile2016CSVv2   = 'TTLep_pow_2016_2j_2l_CSVv2_eta.pkl'
+effFile2017CSVv2   = 'TTLep_pow_2017_2j_2l_CSVv2_eta.pkl'
+effFile2018CSVv2   = 'TTLep_pow_2018_2j_2l_CSVv2_eta.pkl'
+
 effFile2016DeepCSV = 'TTLep_pow_2016_2j_2l_DeepB_eta.pkl'
 effFile2017DeepCSV = 'TTLep_pow_2017_2j_2l_DeepB_eta.pkl'
 effFile2018DeepCSV = 'TTLep_pow_2018_2j_2l_DeepB_eta.pkl'
 
-effFile2016CSVv2   = 'TTLep_pow_2016_2j_2l_CSVv2_eta.pkl'
-effFile2017CSVv2   = 'TTLep_pow_2017_2j_2l_CSVv2_eta.pkl'
-effFile2018CSVv2   = 'TTLep_pow_2018_2j_2l_CSVv2_eta.pkl'
+effFile2016DeepJet = 'TTLep_pow_2016_2j_2l_DeepFlavB_eta_v2.pkl'
+effFile2017DeepJet = 'TTLep_pow_2017_2j_2l_DeepFlavB_eta_v2.pkl'
+effFile2018DeepJet = 'TTLep_pow_2018_2j_2l_DeepFlavB_eta_v2.pkl'
+
 
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation2016Legacy
 sfFile2016DeepCSV_FastSim   = 'deepcsv_13TEV_16SL_18_3_2019.csv'
@@ -55,6 +59,21 @@ sfFile2018CSVv2    = 'b2017_CSVv2_94XSF_V2_B_F.csv' #still 2017. there won't be 
 sfFile2016CSVv2_FastSim = 'csvv2_13TEV_17SL_18_3_2019.csv'
 sfFile2017CSVv2_FastSim = 'csvv2_13TEV_17SL_18_3_2019.csv'
 sfFile2018CSVv2_FastSim = 'csvv2_13TEV_17SL_18_3_2019.csv'
+
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation2016Legacy
+sfFile2016DeepJet_FastSim   = 'DeepFlav_13TEV_16SL_18_3_2019.csv'
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation94X
+sfFile2017DeepJet_FastSim   = 'DeepFlav_13TEV_17SL_18_3_2019.csv'
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation102X
+sfFile2018DeepJet_FastSim   = 'DeepFlav_13TEV_18SL_7_5_2019.csv'
+
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation2016Legacy
+sfFile2016DeepJet  = 'b2016_DeepJet_2016LegacySF_V1.csv' 
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation94X
+sfFile2017DeepJet  = 'b2017_DeepFlavour_94XSF_WP_V3_B_F.csv'
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation102X
+sfFile2018DeepJet  = 'b2018_DeepJet_102XSF_V1.csv' 
+
 
 class BTagEfficiency:
 
@@ -124,6 +143,10 @@ class BTagEfficiency:
                 self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2016DeepCSV ) )
                 self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile2016DeepCSV_FastSim ) )
                 self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2016DeepCSV ) )
+            elif tagger == 'DeepJet':
+                self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2016DeepJet ) )
+                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile2016DeepJet_FastSim ) )
+                self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2016DeepJet ) )
 
         if year == 2017:
             self.etaBins = etaBins2017
@@ -135,6 +158,10 @@ class BTagEfficiency:
                 self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2017DeepCSV ) )
                 self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile2017DeepCSV_FastSim ) )
                 self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2017DeepCSV ) )
+            elif tagger == 'DeepJet':
+                self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2017DeepJet ) )
+                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile2017DeepJet_FastSim ) )
+                self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2017DeepJet ) )
 
         if year == 2018:
             self.etaBins = etaBins2018
@@ -146,6 +173,10 @@ class BTagEfficiency:
                 self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2018DeepCSV ) )
                 self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile2018DeepCSV_FastSim ) )
                 self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2018DeepCSV ) )
+            elif tagger == 'DeepJet':
+                self.scaleFactorFile   = os.path.expandvars( os.path.join( self.dataDir, sfFile2018DeepJet ) )
+                self.scaleFactorFileFS = os.path.expandvars( os.path.join( self.dataDir, sfFile2018DeepJet_FastSim ) )
+                self.mcEfficiencyFile  = os.path.expandvars( os.path.join( self.dataDir, effFile2018DeepJet ) )
 
         logger.info ( "Loading scale factors from %s", self.scaleFactorFile )
         ROOT.gSystem.Load( 'libCondFormatsBTauObjects' ) 

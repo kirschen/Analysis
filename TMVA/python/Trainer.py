@@ -203,7 +203,8 @@ class Trainer:
     def addMethod( self, method ):
         # for MLP add HiddenLayer option that is of the form N,x,y,z,... where N is the number of variables and x,y,z the "layers" key
         if method["type"]==ROOT.TMVA.Types.kMLP:
-            method["options"].append( "HiddenLayers=%s" % ",".join( map( str, [len( self.mva_variable_names )] + method["layers"] )) )
+            #method["options"].append( "HiddenLayers=%s" % ",".join( map( str, [len( self.mva_variable_names )] + method["layers"] )) )
+            method["options"].append( "HiddenLayers=%s" % method["layers"]  )
 
         if not hasattr( self, "methods" ):
             self.methods = []
