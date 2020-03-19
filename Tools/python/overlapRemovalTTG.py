@@ -70,9 +70,9 @@ def getPhotonCategory( g, genparts ):
     hasMeson   = hasMesonMother( parentList )
 
     # type 4: magic photons: no gen-particle close by. These get categorized in getAdvancedPhotonCategory()
-    if abs(g['pdgId']) == 22 and not hasMeson: return 0  # type 0: genuine photon:   photon with no meson in parent list
-    if abs(g['pdgId']) == 22 and hasMeson:     return 1  # type 1: hadronic photon:  photon with meson in parent list
-    if abs(g['pdgId']) == 11:                  return 2  # type 2: mis-Id electron:  electron with meson-mother requirement from genuine photon
+    if abs(g['pdgId']) == 22 and not hasMeson: return 0  # type 0: genuine photon:   gen photon with no meson in parent list
+    if abs(g['pdgId']) == 22 and hasMeson:     return 1  # type 1: hadronic photon:  gen photon with meson in parent list
+    if abs(g['pdgId']) == 11:                  return 2  # type 2: mis-Id electron:  gen electron
     return 3
 
 def hasLeptonMother( g, genparts ):
@@ -91,6 +91,8 @@ def getPhotonMother( g, genparts ):
     return int( parentList[0] )
 
 def getAdvancedPhotonCategory( recoPart, genParts, coneSize=0.2, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] ):
+    # recoPart = reco photon to categorize
+    # genParts = genParticle collection from nanoAOD
 
     # nanoAOD genMatch found, just take that, do standard categorization
     if recoPart['genPartIdx'] >= 0:
@@ -98,16 +100,18 @@ def getAdvancedPhotonCategory( recoPart, genParts, coneSize=0.2, ptCut=5., exclu
         return getPhotonCategory( gen, genParts ) # standard photon categories
 
     rec = { val:recoPart[val] for val in ["pt","eta","phi","genPartIdx"] }
-    # no reco particles to match
+    # no reco particles to match, just a check
     if any( map( isnan, rec.values() ) ): return 3 # fakes
 
-    # no gen particles to match
+    # no gen particles to match, empty gen collection, just a check
     if not genParts: return 4 # magic photons
 
     # do not only focus on status 1 particles, you need everything
+    # filter gen particle collection by pt-cut and remove excluded pdgId particles (e.g. neutrinos)
     gParts = filter( lambda p: p['status']>0 and p['pt']>ptCut and p['pdgId'] not in excludedPdgIds, genParts )
 
     # no filtered gen particles to match
+    # no gen particles that fulfill the pt-cut or pdgId requirements
     if not gParts: return 4 # magic photons
 
     # else do a delta R matching to all gen particles
@@ -117,22 +121,26 @@ def getAdvancedPhotonCategory( recoPart, genParts, coneSize=0.2, ptCut=5., exclu
     # the nanoAOD gen matching has a problem due to the 50% pT cut in the matching algorithm
     # thus check for these kind of events with deltaR matching
 
+    # get all deltaR values to the reco photon
     genAll  = [ (g, deltaR( recoPart, g )) for g in gParts ]
+    # filter gen particle collection to only those in the delta R cone
     genCone = filter( lambda (gen, dr): dr < coneSize, genAll ) if coneSize > 0 else genAll
 
     # no gen particle in deltaR cone
     if not genCone: return 4 # magic photons
 
+    # get the pdgId values of all gen particles in the delta R cone
     genCone.sort( key=lambda (gen, dr): dr )
     genConePdgIDs = [ abs(gen["pdgId"]) for (gen, dr) in genCone ]
 
-    # pi0 and photon in dR cone
+    # if a pi0 and photon in dR cone, categorize as hadronics
     if 111 in genConePdgIDs and 22 in genConePdgIDs:
         return 1 # hadronics, photon from pi0 decay
-#        photon = filter( lambda (gen, dr): gen["pdgId"]==22, genCone )[0]
-#        return photon["index"]
 
-    return 3 # fake, gen particles close by, not pion decay, no nanoAOD gen-matching
+
+    # else: there are particles in the delta R cone, but no (pi0 + photon)
+    # still the nanoAOD gen matching failed, categorize as fakes
+    return 3 # fakes
 
 def addParticle( to, add ):
     # add particle "add" to particle "to"
@@ -190,8 +198,6 @@ def calculateGenIso( g, genParts, coneSize=0.3, ptCut=5., excludedPdgIds=[ 12, -
     if chgIso:
         gParts = filter( lambda (p, dr): p["pdgId"] not in [22,111,130,310,311,2112], gParts )
         if not gParts: return 0.
-
-    print [p["pdgId"] for (p,dr) in gParts]
 
     pTCone = sum( [p["pt"] for (p, dr) in gParts] )
     return pTCone/g["pt"]
