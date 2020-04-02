@@ -416,6 +416,29 @@ class cardFileWriter:
         shutil.rmtree(uniqueDirname)
         return res
 
+    def calcNLL(self, fname=None, options=""):
+        '''
+        Does max likelihood fits, both with r=1 and a best-fit value
+        '''
+        import uuid, os
+        ustr          = str(uuid.uuid4())
+        uniqueDirname = os.path.join(self.releaseLocation, ustr)
+        print "Creating %s"%uniqueDirname
+        os.makedirs(uniqueDirname)
+        if fname is not None:  # Assume card is already written when fname is not none
+          filename = os.path.abspath(fname)
+        else:
+          filename = fname if fname else os.path.join(uniqueDirname, ustr+".txt")
+          self.writeToFile(filename)
+
+        combineCommand  = "cd "+uniqueDirname+";eval `scramv1 runtime -sh`;combine -M MultiDimFit -n Nominal --saveNLL --forceRecreateNLL --freezeParameters r "+filename
+        os.system(combineCommand)
+        nll = self.readNLLFile(uniqueDirname+"/higgsCombineNominal.MultiDimFit.mH120.root")
+        nll["bestfit"] = nll["nll"]
+        shutil.rmtree(uniqueDirname)
+
+        return nll
+
     def calcNuisances(self, fname=None, options="",bonly=False):
         import uuid, os
         ustr          = str(uuid.uuid4())
