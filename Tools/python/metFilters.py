@@ -3,7 +3,8 @@
 # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2
 
 def getFilterCut( year, isData=False, ignoreJSON=False, isFastSim=False, skipBadChargedCandidate=True, skipBadPFMuon=False, skipVertexFilter=False ):
-    if year == 2016:
+
+    if year in [2016, "Run2016"]:
         filters             = [ "Flag_goodVertices" ]                         # primary vertex filter
         if not isFastSim:
             filters        += [ "Flag_globalSuperTightHalo2016Filter" ]       # beam halo filter
@@ -17,7 +18,7 @@ def getFilterCut( year, isData=False, ignoreJSON=False, isFastSim=False, skipBad
         if isData:
             filters        += [ "Flag_eeBadScFilter" ]                        # ee badSC noise filter (data only)
 
-    elif year == 2017:
+    elif year in [2017, "Run2017"]:
         filters             = [ "Flag_goodVertices" ]                         # primary vertex filter
         if not isFastSim:
             filters        += [ "Flag_globalSuperTightHalo2016Filter" ]       # beam halo filter
@@ -37,7 +38,7 @@ def getFilterCut( year, isData=False, ignoreJSON=False, isFastSim=False, skipBad
         else:
             filters        += ["Flag_ecalBadCalibFilterV2"]
 
-    elif year == 2018:
+    elif year in [2018, "Run2018"]:
         filters             = [ "Flag_goodVertices" ]                         # primary vertex filter
         if not isFastSim:
             filters        += [ "Flag_globalSuperTightHalo2016Filter" ]       # beam halo filter
