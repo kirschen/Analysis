@@ -57,6 +57,12 @@ def getFilterCut( year, isData=False, ignoreJSON=False, isFastSim=False, skipBad
         else:
             filters        += ["Flag_ecalBadCalibFilterV2"]
 
+    elif year=="RunII":
+        return "((year==2016&&{filter_2016})||(year==2017&&{filter_2017})||(year==2018&&{filter_2018}))".format( 
+            filter_2016 = getFilterCut( 2016, isData=isData, ignoreJSON=ignoreJSON, isFastSim=isFastSim, skipBadChargedCandidate=skipBadChargedCandidate, skipBadPFMuon=skipBadPFMuon, skipVertexFilter=skipVertexFilter),
+            filter_2017 = getFilterCut( 2017, isData=isData, ignoreJSON=ignoreJSON, isFastSim=isFastSim, skipBadChargedCandidate=skipBadChargedCandidate, skipBadPFMuon=skipBadPFMuon, skipVertexFilter=skipVertexFilter),
+            filter_2018 = getFilterCut( 2018, isData=isData, ignoreJSON=ignoreJSON, isFastSim=isFastSim, skipBadChargedCandidate=skipBadChargedCandidate, skipBadPFMuon=skipBadPFMuon, skipVertexFilter=skipVertexFilter),
+          )
     else:
         raise NotImplementedError( "No MET filter found for year %i" %year )
 
