@@ -2,7 +2,7 @@
 # Flag_BadChargedCandidateFilter is not recommended anymore, under review
 # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2
 
-def getFilterCut( year, isData=False, ignoreJSON=False, isFastSim=False, skipBadChargedCandidate=True, skipBadPFMuon=False, skipVertexFilter=False ):
+def getFilterCut( year, isData=False, ignoreJSON=False, isFastSim=False, skipBadChargedCandidate=True, skipBadPFMuon=False, skipVertexFilter=False, skipWeight=False):
 
     if year in [2016, "Run2016"]:
         filters             = [ "Flag_goodVertices" ]                         # primary vertex filter
@@ -71,7 +71,8 @@ def getFilterCut( year, isData=False, ignoreJSON=False, isFastSim=False, skipBad
         filters            += [ "PV_ndof>4", "sqrt(PV_x*PV_x+PV_y*PV_y)<=2", "abs(PV_z)<=24" ]
 
     if isData:
-        filters            += [ "weight>0" ]
+        if not skipWeight:
+            filters        += [ "weight>0" ]
         if not ignoreJSON:
             filters        += [ "jsonPassed>0" ]
 
