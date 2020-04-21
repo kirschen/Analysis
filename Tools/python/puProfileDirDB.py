@@ -9,7 +9,7 @@ import os
 from RootTools.core.standard import *
 
 # Analysis
-from Analysis.Tools.ResultsDB import ResultsDB
+from Analysis.Tools.DirDB import DirDB
 from Analysis.Tools.user      import cache_directory
 
 loggerChoices = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET']
@@ -42,28 +42,29 @@ class puProfile:
         if not os.path.isdir( cacheDir ): os.makedirs( cacheDir )
 
         self.source_sample = source_sample
+        self.cacheDir = cacheDir
         self.initCache( cacheDir )
         self.binning        = [ 100, 0, 100 ]
         self.draw_string    = "Pileup_nTrueInt"
 
     def initCache(self, cacheDir):
-        self.cache = ResultsDB( os.path.join( cacheDir, 'puProfiles_v2.sql' ), "puProfile", [ "selection", "weight", "source" ] )
+        self.cache = DirDB( os.path.join( cacheDir, 'puProfilesDirDBCache' ))
 
     def uniqueKey( self, *arg ):
         '''No dressing required'''
         return arg
 
     def cachedTemplate( self, selection, weight = '(1)', save = True, overwrite = False):
-        key = {"selection":selection, "weight":weight, "source":self.source_sample.name}
+        key = (selection, weight, self.source_sample.name)
         if (self.cache and self.cache.contains(key)) and not overwrite:
             result = self.cache.get(key)
-            logger.info( "Loaded MC PU profile from %s"%(self.cache.database_file) )
+            logger.info( "Loaded MC PU profile from %s"%(self.cacheDir) )
             logger.debug( "Key used: %s result: %r"%(key, result) )
         elif self.cache:
             logger.info( "Obtain PU profile for %s"%( key, ) )
             result = self.makeTemplate( selection = selection, weight = weight)
             if result:
-                result = self.cache.addData( key, result, overwrite=save )
+                result = self.cache.add( key, result, overwrite=save )
                 logger.info( "Adding PU profile to cache for %s : %r" %( key, result) )
             else:
                 logger.warning( "Couldn't create PU profile to cache for %s : %r" %( key, result) )
