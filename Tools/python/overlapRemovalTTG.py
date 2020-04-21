@@ -13,12 +13,13 @@ These functions use gen-matching where the references to ALL gen particles are n
 
 def isIsolatedPhoton( g, genparts, coneSize=0.2, ptCut=5, excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] ):
     for other in genparts:
-        if other['pdgId']              == 22:       continue   # Avoid photon or generator copies of it
-        if other['pdgId'] in excludedPdgIds:        continue   # Avoid particles you don't want to consider (e.g. neutrinos)
-        if abs( other['pt'] - g['pt'] ) < 0.0001:   continue   # Same particle
-        if other['status']             != 1:        continue   # Only final state particles
-        if other['pt']                  < ptCut:    continue   # pt > 5
-        if deltaR( g, other )           > coneSize: continue   # check deltaR
+        if other["index"] == g["index"]:             continue # same particle
+        if other['pdgId']              == 22:        continue   # Avoid photon or generator copies of it
+        if other['pdgId'] in excludedPdgIds:         continue   # Avoid particles you don't want to consider (e.g. neutrinos)
+        if other['status']             != 1:         continue   # Only final state particles
+        if other['pt']                  < ptCut:     continue   # pt > 5
+        if deltaR( g, other )           >= coneSize: continue   # check deltaR
+        if g["index"] in getParentIndices( other, genparts ): continue # check if the particle is a decay particle of the photon, if so, ignore those
         return False
     return True
 
@@ -36,10 +37,24 @@ def getParentIds( g, genParticles ):
         return parents
   return parents
 
+# Run through parents in genparticles, and return list of their indices
+def getParentIndices( g, genParticles ):
+  parents = []
+
+  if g['genPartIdxMother'] >= 0:
+    try:
+        # This is safer than "genParticles[ g['genPartIdxMother'] ]", as the genParticles list can be sorted first, however it requires to add "index" in the dict before sorting
+        mother1  = [ genParticle for genParticle in genParticles if genParticle["index"] == g['genPartIdxMother'] ][0]
+        parents += [ mother1['index'] ] + getParentIndices( mother1, genParticles )
+    except:
+        # when no 'status' selection is made for g, this can run in a kind of endless-loop, then python throws an Exception
+        return parents
+  return parents
+
 def hasMesonMother( parentList ):
     if not parentList: return False
     maxParentID = max( map( abs, parentList ) )
-    return maxParentID > 37 and maxParentID < 999
+    return maxParentID > 37# and maxParentID < 999
 
 def photonFromTopDecay( parentList ):
     if not parentList:      return False  # empty list
@@ -61,7 +76,6 @@ def photonFromLepton( parentList ):
     return True                           # photon from top decay
 
 def getPhotonCategory( g, genparts ):
-
     # safe time if g is no photon or electron
     if not g or abs(g['pdgId']) not in [11,22]: return 3
 
@@ -90,7 +104,7 @@ def getPhotonMother( g, genparts ):
 
     return int( parentList[0] )
 
-def getAdvancedPhotonCategory( recoPart, genParts, coneSize=0.2, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] ):
+def getAdvancedPhotonCategory( recoPart, genParts, coneSize=0.3, ptCut=5., excludedPdgIds=[ 12, -12, 14, -14, 16, -16 ] ):
     # recoPart = reco photon to categorize
     # genParts = genParticle collection from nanoAOD
 
@@ -136,7 +150,6 @@ def getAdvancedPhotonCategory( recoPart, genParts, coneSize=0.2, ptCut=5., exclu
     # if a pi0 and photon in dR cone, categorize as hadronics
     if 111 in genConePdgIDs and 22 in genConePdgIDs:
         return 1 # hadronics, photon from pi0 decay
-
 
     # else: there are particles in the delta R cone, but no (pi0 + photon)
     # still the nanoAOD gen matching failed, categorize as fakes
