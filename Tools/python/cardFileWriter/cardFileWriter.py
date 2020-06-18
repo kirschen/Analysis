@@ -91,11 +91,11 @@ class cardFileWriter:
             return
         self.rateParameters.append((p, value, r))
 
-    def addFreeParameter(self, p, value, r):
-        if [ a[0] for a in self.freeParameters ].count(p):
+    def addFreeParameter(self, name, p, value, r):
+        if [ a[0] for a in self.freeParameters ].count(name):
             logger.info("Free parameter for process %s already added!"%p)
             return
-        self.freeParameters.append((p, value, r))
+        self.freeParameters.append((name, p, value, r))
 
     def specifyExpectation(self, b, p, exp):
         self.expectation[(b,p)] = round(exp, self.precision)
@@ -233,8 +233,7 @@ class cardFileWriter:
         for p in self.freeParameters:
             outfile.write('\n')
             for b in self.bins:
-                outfile.write('%s_norm_%s rateParam %s *%s* (@0*1) %s_norm\n'%(p[0], b, b, p[0], p[0]))
-            outfile.write('%s_norm extArg %s %s\n'%(p[0], str(p[1]), str(p[2])))
+                outfile.write('%s rateParam %s %s %s %s\n'%(p[0], b, p[1], str(p[2]), str(p[3])))
 
         if shapeFile:
             outfile.write('* autoMCStats 0 \n')
