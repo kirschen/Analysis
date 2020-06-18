@@ -43,10 +43,17 @@ class CombineResults:
         if not cardFile.endswith(".txt") or "shapeCard" in cardFile or not os.path.exists( cardFile ):
             raise ValueError( "Please provide the path to the *.txt cardfile! Got: %s"%cardFile )
 
-        self.year          = year
+        self.year          = str(year)
         self.bkgOnly       = bkgOnly
         self.isSearch      = isSearch # for searches, the bkgOnly impact plots are with mu=0, for measurements mu=1
         self.cardFile      = cardFile
+        self.cardFile16    = None
+        self.cardFile17    = None
+        self.cardFile18    = None
+        if self.year == "combined":
+            self.cardFile16    = self.cardFile.replace("COMBINED","2016")
+            self.cardFile17    = self.cardFile.replace("COMBINED","2017")
+            self.cardFile18    = self.cardFile.replace("COMBINED","2018")
 
         self.shapeFile      = cardFile.replace(".txt","_shapeCard.txt" )
         if not os.path.exists( self.shapeFile ):
@@ -333,13 +340,19 @@ class CombineResults:
                 return self.binLabels
 
         binLabels = []
-        with open( self.cardFile ) as f:
-            for line in f:
-                if line.startswith("# Bin"):
-                    binLabels.append(line.split(": ")[1].split("\n")[0])
-                elif line.startswith("#Muted"):
-                    binLabels.append(line.split(": ")[2].split("\n")[0])
-
+        if self.year == "combined":
+            cardfiles = [self.cardFile16, self.cardFile17, self.cardFile18]
+            tags = ["2016 ", "2017 ", "2018 "]
+        else:
+            cardfiles = [self.cardFile]
+            tags = [self.year+" "]
+        for c, card in enumerate(cardfiles):
+            with open( card ) as f:
+                for line in f:
+                    if line.startswith("# Bin"):
+                        binLabels.append(tags[c] + line.split(": ")[1].split("\n")[0])
+                    elif line.startswith("#Muted"):
+                        binLabels.append(tags[c] + line.split(": ")[2].split("\n")[0])
         self.binLabels = binLabels
 
         if labelFormater:
@@ -666,6 +679,10 @@ class CombineResults:
                     hists[dir]["data"].legendText   = "data"
                     hists[dir]["data"].legendOption = "p"
 
+                if self.year == "combined":
+                    k = "data" if "data" in hist else hist
+                    hists[dir][k].GetXaxis().SetRangeUser(0, int(hists[dir][k].GetNbinsX()/3.))
+
             if nuisances and not bkgSubstracted: # currently no single-nuisance plots with bkg substracted histograms #FIXME
                 if isinstance( nuisances, str ): nuisances = [nuisances]
                 hists[dir].update( self.getNuisanceHistos( postFit=postFit, plotBins=None, nuisances=nuisances ) )
@@ -722,7 +739,7 @@ class CombineResults:
             if directory: return {directory:hists[directory]}                
             else: return hists
 
-    def getRegionHistoList( self, regionHistos, processes=None, noData=False, sorted=False, bkgSubstracted=False ):
+    def getRegionHistoList( self, regionHistos, processes=None, noData=False, sorted=False, bkgSubstracted=False, directory="total" ):
         # get the list of histograms and the ratio list for plotting a region plot
 
         if bkgSubstracted: return [ [regionHistos["signal"]], [regionHistos["data"]], [regionHistos["data_syst"]] ], [(0,1),(1,1),(2,1)]
@@ -742,14 +759,22 @@ class CombineResults:
         nuisances    = self.getNuisancesList( systOnly=False )
         binProcesses = self.getProcessesPerBin()
         ratioHistos  = []
+        bins         = len(self.getBinLabels()) if self.year != "combined" else int(len(self.getBinLabels())/3.)
         i_n          = 0
 
         if sorted:
             histoList = [[]]
-            for i in range( regionHistos["signal"].GetNbinsX() ):
+#            for i in range( regionHistos["signal"].GetNbinsX() ):
+            for i in range( bins ):
                 proc_list = []
-
-                for p in binProcesses["Bin%i"%i]:
+                key = directory + "_Bin%i"%i 
+                if directory == "total":
+                    key = "Bin%i"%i
+                elif directory != "total" and any( ["Bin" in k for k in binProcesses.keys()]):
+                    key = directory + "_Bin%i"%i
+                else:
+                    key = directory
+                for p in binProcesses[key]:
 
                     if p in regionHistos.keys():
                         # set only one bin != 0
@@ -807,18 +832,20 @@ class CombineResults:
 
         cardName      = self.cardFile.split("/")[-1].split(".")[0]
         shapeName     = self.shapeFile.split("/")[-1]
-        shapeRootName = self.shapeRootFile.split("/")[-1]
+        if self.year != "combined":
+            shapeRootName = self.shapeRootFile.split("/")[-1]
         rootCardName  = self.rootCardFile.split("/")[-1]
 
         # assuming you have combine in the same release!!! #FIXME
         combineReleaseLocation = os.path.join( os.environ["CMSSW_BASE"], "src" )
-        combineDirname = os.path.join( combineReleaseLocation, str(self.year), cardName )
+        combineDirname = os.path.join( combineReleaseLocation, str(self.year), cardName, "expected" if expected else "observed" )
         if not os.path.isdir(combineDirname): os.makedirs(combineDirname)
 
         newShapeFilePath     = os.path.join( combineDirname, shapeName )
-        newShapeRootFilePath = os.path.join( combineDirname, shapeRootName )
         shutil.copyfile( self.shapeFile,     newShapeFilePath )
-        shutil.copyfile( self.shapeRootFile, newShapeRootFilePath )
+        if self.year != "combined":
+            newShapeRootFilePath = os.path.join( combineDirname, shapeRootName )
+            shutil.copyfile( self.shapeRootFile, newShapeRootFilePath )
 
         # use scram if combineReleaseLocation is a different release than current working directory
         # echo is just a placeholder
@@ -828,15 +855,15 @@ class CombineResults:
         if self.bkgOnly:
             prepWorkspace = "text2workspace.py %s --X-allow-no-signal -m 125"%shapeName
             if self.isSearch:
-                robustFit  = "combineTool.py -M Impacts -d %s -m 125 --doInitialFit --robustFit 1 --rMin -0.001 --rMax 0.001"%rootCardName
-                impactFits = "combineTool.py -M Impacts -d %s -m 125 --robustFit 1 --doFits --parallel %i --rMin -0.001 --rMax 0.001"%( rootCardName, cores )
+                robustFit  = "combineTool.py -M Impacts -d %s -m 125 --expectSignal 0 --doInitialFit --robustFit 1 --rMin -0.01 --rMax 0.01"%rootCardName
+                impactFits = "combineTool.py -M Impacts -d %s -m 125 --expectSignal 0 --robustFit 1 --doFits --parallel %i --rMin -0.01 --rMax 0.01"%( rootCardName, cores )
             else:
-                robustFit  = "combineTool.py -M Impacts -d %s -m 125 --doInitialFit --robustFit 1 --rMin 0.999 --rMax 1.001"%rootCardName
-                impactFits = "combineTool.py -M Impacts -d %s -m 125 --robustFit 1 --doFits --parallel %i --rMin 0.999 --rMax 1.001"%( rootCardName, cores )
+                robustFit  = "combineTool.py -M Impacts -d %s -m 125 --expectSignal 1 --doInitialFit --robustFit 1 --rMin 0.99 --rMax 1.01"%rootCardName
+                impactFits = "combineTool.py -M Impacts -d %s -m 125 --expectSignal 1 --robustFit 1 --doFits --parallel %i --rMin 0.99 --rMax 1.01"%( rootCardName, cores )
         else:
             prepWorkspace = "text2workspace.py %s -m 125"%shapeName
-            robustFit     = "combineTool.py -M Impacts -d %s -m 125 --doInitialFit --robustFit 1 --rMin -10 --rMax 10"%rootCardName
-            impactFits    = "combineTool.py -M Impacts -d %s -m 125 --robustFit 1 --doFits --parallel %s --rMin -10 --rMax 10"%( rootCardName, cores )
+            robustFit     = "combineTool.py -M Impacts -d %s -m 125 --doInitialFit --robustFit 1 --rMin 0 --rMax 5"%rootCardName
+            impactFits    = "combineTool.py -M Impacts -d %s -m 125 --robustFit 1 --doFits --parallel %s --rMin 0 --rMax 5"%( rootCardName, cores )
 
         extractImpact  = "combineTool.py -M Impacts -d %s -m 125 -o impacts.json"%rootCardName
         plotImpacts    = "plotImpacts.py -i impacts.json -o impacts"
@@ -907,7 +934,6 @@ class CombineResults:
 
         fit = self.__getFitObject( key=dirName )
         self.covarianceHistos[key] = copy.copy( fit.Get("overall_total_covar") )
-
         # normalize
         self.covarianceHistos[key].Scale(1./self.covarianceHistos[key].GetMaximum())
 
