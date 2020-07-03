@@ -170,7 +170,7 @@ class cardFileWriter:
     def mfs(self, f):
         return str(round(float(f),self.precision))
 
-    def writeToFile(self, fname, shapeFile=False):
+    def writeToFile(self, fname, shapeFile=False, noMCStat=False):
         import datetime, os
         if not self.checkCompleteness():
             print "Incomplete specification."
@@ -235,7 +235,7 @@ class cardFileWriter:
             for b in self.bins:
                 outfile.write('%s rateParam %s %s %s %s\n'%(p[0], b, p[1], str(p[2]), str(p[3])))
 
-        if shapeFile:
+        if shapeFile and not noMCStat:
             outfile.write('* autoMCStats 0 \n')
 
         outfile.close()
@@ -245,7 +245,7 @@ class cardFileWriter:
     def makeHist(self, name):
         return ROOT.TH1F(name, name, len(self.bins), 0, len(self.bins))
 
-    def writeToShapeFile(self, fname):
+    def writeToShapeFile(self, fname, noMCStat=False):
         bins        = natural_sort(self.bins)
         processes   = []
         nuisances   = [ u for u in self.uncertainties if (not 'stat' in u.lower() and self.uncertaintyString[u] == 'shape')  ] # stat uncertainties are treated differently
@@ -327,7 +327,7 @@ class cardFileWriter:
 
         self.specifyObservation(self.bins[0], int(data_obs.Integral()))
         self.uncertainties = logNormal + nuisances # need to fix things if up/down are already provided
-        self.writeToFile(txtFile, shapeFile=rootFile)
+        self.writeToFile(txtFile, shapeFile=rootFile, noMCStat=noMCStat)
         
         # write all the histograms to a root file
         writeObjToFile(rootFileFull, data_obs)
@@ -348,7 +348,7 @@ class cardFileWriter:
         for year in years:
             cmd += " dc_%s=%s"%(year, cards[year])
 
-        combineCommand  = "cd "+uniqueDirname+";combineCards.py %s > combinedCard.txt"%cmd
+        combineCommand  = "cd "+uniqueDirname+";combineCards.py %s > combinedCard.txt; text2workspace.py combinedCard.txt --X-allow-no-signal -m 125"%(cmd)
         os.system(combineCommand)
         resFile = cards[years[0]].replace(str(years[0]), 'COMBINED')
         f = resFile.split('/')[-1]
@@ -357,6 +357,7 @@ class cardFileWriter:
             os.makedirs(resPath)
         logger.info("Putting combined card into dir %s", resPath)
         shutil.copyfile(uniqueDirname+"/combinedCard.txt", resFile)
+        shutil.copyfile(uniqueDirname+"/combinedCard.root", resFile.replace(".txt",".root"))
 
         return resFile
 
