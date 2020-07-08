@@ -39,6 +39,12 @@ elif os.environ['USER'] in ['ttschida']:
     cache_directory        = "/afs/hephy.at/data/cms04/ttschida/cache/"
     cern_proxy_certificate = "/afs/cern.ch/user/t/ttschida/private/.proxy"
     dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/ttschida/'
+elif os.environ['USER'] in ['kirschen']:
+    cern_proxy_certificate  = '/afs/cern.ch/user/k/kirschen/x509cert_kirschen'
+    cache_directory = "/afs/cern.ch/work/k/kirschen/private/JetMET_L2/ResidualAnalyses/StopsDileptonForPostProcessing/cache/"
+    analysis_results        = '/afs/cern.ch/work/k/kirschen/private/JetMET_L2/ResidualAnalyses/StopsDileptonForPostProcessing/results'
+    plot_directory      = "/eos/home-k/kirschen/plots/"
+    dpm_directory          = '/dpm/oeaw.ac.at/home/cms/store/user/%s/'%os.environ['USER']
 else:
     plot_directory         = "/afs/hephy.at/user/%s/%s/www/Analysis/"%(os.environ['USER'][0],os.environ['USER'])
     cache_directory        = "/afs/hephy.at/data/%s01/Analysis/"%os.environ['USER']
